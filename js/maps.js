@@ -65,7 +65,7 @@ function initGoogleMap() {
   mapsState.map = new google.maps.Map(mapEl, {
     center:            defaultCenter,
     zoom:              14,
-    styles:            DARK_MAP_STYLE,
+    styles:            window._sathi_mode === 'night' ? DARK_MAP_STYLE : [],
     disableDefaultUI:  true,
     zoomControl:       false,
     mapTypeControl:    false,
@@ -395,6 +395,14 @@ function getMockScores(index, mode) {
   return base[index] || base[0];
 }
 
+/**
+ * Update map theme dynamically.
+ */
+function setMapTheme(mode) {
+  if (!mapsState.map) return;
+  mapsState.map.setOptions({ styles: mode === 'night' ? DARK_MAP_STYLE : [] });
+}
+
 // ─── Global callback for Google Maps async loader ─────────────────────
 window.onGoogleMapsReady = initGoogleMap;
 
@@ -404,5 +412,6 @@ window.SathiMaps = {
   highlightRoute,
   clearRouteRenderers,
   updateUserPosition,
+  setMapTheme,
   getState: () => mapsState,
 };

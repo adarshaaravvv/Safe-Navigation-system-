@@ -455,7 +455,9 @@ function closeRoutesPanel() {
 // ─── NIGHT MODE ──────────────────────────────────────────────────────
 function setMode(mode) {
   state.mode = mode;
+  window._sathi_mode = mode; // Store globally for maps.js initial load
   document.body.classList.toggle('night-mode', mode === 'night');
+  window.SathiMaps?.setMapTheme(mode);
 
   // Update buttons
   $qsa('.mode-btn').forEach(btn => {

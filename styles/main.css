@@ -18,30 +18,32 @@
   --danger-red: #ef4444;
   --danger-red-dim: rgba(239, 68, 68, 0.15);
 
-  /* Surface system */
-  --bg-base: #0A0C14;
-  --bg-card: #131726;
-  --bg-card-2: #1C2235;
-  --bg-glass: rgba(255, 255, 255, 0.04);
-  --bg-glass-strong: rgba(255, 255, 255, 0.08);
-  --bg-overlay: rgba(10, 12, 20, 0.85);
+  /* Surface system - LIGHT THEME */
+  --bg-base-rgb: 248, 250, 252;
+  --bg-base: #F8FAFC;
+  --bg-card: #FFFFFF;
+  --bg-card-2: #F1F5F9;
+  --bg-glass: rgba(0, 0, 0, 0.03);
+  --bg-glass-strong: rgba(0, 0, 0, 0.06);
+  --bg-overlay: rgba(248, 250, 252, 0.85);
+  --bg-placeholder: #e2e8f0;
 
-  /* Text */
-  --text-primary: #F1F5FF;
-  --text-secondary: #8B91A8;
-  --text-muted: #4A5066;
-  --text-inverse: #0A0C14;
+  /* Text - LIGHT THEME */
+  --text-primary: #0F172A;
+  --text-secondary: #475569;
+  --text-muted: #94A3B8;
+  --text-inverse: #FFFFFF;
 
-  /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-medium: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.2);
+  /* Borders - LIGHT THEME */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-medium: rgba(0, 0, 0, 0.12);
+  --border-strong: rgba(0, 0, 0, 0.2);
 
   /* Gradients */
   --grad-brand: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
   --grad-safe: linear-gradient(135deg, #22c55e, #16a34a);
-  --grad-night: linear-gradient(180deg, #0A0C14 0%, #0D1B3E 100%);
-  --grad-card: linear-gradient(135deg, rgba(108, 58, 232, 0.1), rgba(56, 189, 248, 0.05));
+  --grad-night: linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%);
+  --grad-card: linear-gradient(135deg, rgba(108, 58, 232, 0.05), rgba(56, 189, 248, 0.02));
 
   /* Radius */
   --radius-sm: 8px;
@@ -50,12 +52,12 @@
   --radius-xl: 28px;
   --radius-full: 999px;
 
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.6);
-  --shadow-brand: 0 8px 32px rgba(108, 58, 232, 0.35);
-  --shadow-safe: 0 4px 20px rgba(34, 197, 94, 0.25);
+  /* Shadows - LIGHT THEME */
+  --shadow-sm: 0 2px 8px rgba(15, 23, 42, 0.04);
+  --shadow-md: 0 8px 32px rgba(15, 23, 42, 0.08);
+  --shadow-lg: 0 24px 60px rgba(15, 23, 42, 0.12);
+  --shadow-brand: 0 8px 32px rgba(108, 58, 232, 0.2);
+  --shadow-safe: 0 4px 20px rgba(34, 197, 94, 0.15);
 
   /* Transitions */
   --t-fast: 150ms ease;
@@ -72,9 +74,33 @@
 
 /* Night mode variant */
 body.night-mode {
+  --bg-base-rgb: 10, 12, 20;
   --bg-base: #020510;
   --bg-card: #080E20;
   --bg-card-2: #0D1830;
+  --bg-glass: rgba(255, 255, 255, 0.04);
+  --bg-glass-strong: rgba(255, 255, 255, 0.08);
+  --bg-overlay: rgba(10, 12, 20, 0.85);
+  --bg-placeholder: #0e1420;
+
+  --text-primary: #F1F5FF;
+  --text-secondary: #8B91A8;
+  --text-muted: #4A5066;
+  --text-inverse: #0A0C14;
+
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-medium: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.2);
+
+  --grad-night: linear-gradient(180deg, #0A0C14 0%, #0D1B3E 100%);
+  --grad-card: linear-gradient(135deg, rgba(108, 58, 232, 0.1), rgba(56, 189, 248, 0.05));
+
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 24px 60px rgba(0, 0, 0, 0.6);
+  --shadow-brand: 0 8px 32px rgba(108, 58, 232, 0.35);
+  --shadow-safe: 0 4px 20px rgba(34, 197, 94, 0.25);
+
   --brand-primary: #7C4AF8;
 }
 
@@ -221,7 +247,7 @@ h3 { font-size: 1.1rem; }
   justify-content: space-between;
   height: var(--topbar-height);
   padding: 0 1rem;
-  background: rgba(10, 12, 20, 0.95);
+  background: rgba(var(--bg-base-rgb), 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
@@ -365,7 +391,7 @@ h3 { font-size: 1.1rem; }
 .search-panel {
   position: relative;
   z-index: 90;
-  background: rgba(10, 12, 20, 0.97);
+  background: rgba(var(--bg-base-rgb), 0.97);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
   padding: 0.75rem 1rem;
@@ -506,7 +532,7 @@ h3 { font-size: 1.1rem; }
 .map-placeholder {
   position: absolute;
   inset: 0;
-  background: #0e1420;
+  background: var(--bg-placeholder);
   overflow: hidden;
 }
 
@@ -665,7 +691,7 @@ body.night-mode .night-overlay { opacity: 1; }
   bottom: var(--bottom-nav-height);
   left: 0;
   right: 0;
-  background: rgba(10, 12, 20, 0.97);
+  background: rgba(var(--bg-base-rgb), 0.97);
   backdrop-filter: blur(24px);
   border-top: 1px solid var(--border-subtle);
   border-radius: var(--radius-xl) var(--radius-xl) 0 0;
@@ -898,7 +924,7 @@ body.night-mode .night-overlay { opacity: 1; }
 /* Sticky nav footer — always pinned to bottom of routes panel */
 .panel-nav-footer {
   padding: 0.75rem 1rem;
-  background: rgba(10, 12, 20, 0.98);
+  background: rgba(var(--bg-base-rgb), 0.98);
   border-top: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
@@ -965,7 +991,7 @@ body.night-mode .night-overlay { opacity: 1; }
   align-items: center;
   gap: 0.75rem;
   padding: 0.75rem 1rem;
-  background: rgba(10, 12, 20, 0.95);
+  background: rgba(var(--bg-base-rgb), 0.95);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--border-subtle);
 }
@@ -1088,7 +1114,7 @@ body.night-mode .night-overlay { opacity: 1; }
   left: 0;
   right: 0;
   padding: 0.6rem 1rem;
-  background: rgba(10, 12, 20, 0.85);
+  background: rgba(var(--bg-base-rgb), 0.85);
   backdrop-filter: blur(12px);
   border-top: 1px solid var(--border-subtle);
   display: flex;
@@ -1153,7 +1179,7 @@ body.night-mode .night-overlay { opacity: 1; }
   align-items: center;
   gap: 0.5rem;
   padding: 0 1rem;
-  background: rgba(10, 12, 20, 0.97);
+  background: rgba(var(--bg-base-rgb), 0.97);
   backdrop-filter: blur(24px);
   border-top: 1px solid var(--border-subtle);
 }
@@ -1382,7 +1408,7 @@ body.night-mode .night-overlay { opacity: 1; }
   z-index: 80;
   display: flex;
   height: var(--bottom-nav-height);
-  background: rgba(10, 12, 20, 0.97);
+  background: rgba(var(--bg-base-rgb), 0.97);
   backdrop-filter: blur(24px);
   border-top: 1px solid var(--border-subtle);
   flex-shrink: 0;

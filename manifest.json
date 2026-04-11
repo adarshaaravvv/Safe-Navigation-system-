@@ -1,0 +1,40 @@
+{
+  "name": "Sathi Navigation",
+  "short_name": "Sathi",
+  "description": "Safety-first navigation with crowdsourced safety scoring, Smart Night Mode, and Virtual Travel Buddy",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0A0C14",
+  "theme_color": "#6C3AE8",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["navigation", "travel", "utilities"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Navigate Home",
+      "short_name": "Home",
+      "description": "Start navigation to home",
+      "url": "/?shortcut=home"
+    },
+    {
+      "name": "SOS Alert",
+      "short_name": "SOS",
+      "description": "Send SOS alert",
+      "url": "/?shortcut=sos"
+    }
+  ]
+}

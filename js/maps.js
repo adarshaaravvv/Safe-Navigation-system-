@@ -100,6 +100,34 @@ function initGoogleMap() {
     });
   }
 
+  // Wire Places autocomplete to origin input
+  const originInput = document.getElementById('origin-input');
+  if (originInput) {
+    mapsState.originAutocomplete = new google.maps.places.Autocomplete(originInput, {
+      componentRestrictions: { country: 'IN' },
+      fields: ['geometry', 'name', 'formatted_address'],
+    });
+
+    mapsState.originAutocomplete.addListener('place_changed', () => {
+      const place = mapsState.originAutocomplete.getPlace();
+      if (!place.geometry) return;
+
+      mapsState.currentLocation = {
+        lat: place.geometry.location.lat(),
+        lng: place.geometry.location.lng(),
+      };
+
+      if (mapsState.userMarker) {
+        mapsState.userMarker.setPosition(mapsState.currentLocation);
+        mapsState.map.panTo(mapsState.currentLocation);
+      }
+
+      if (window.onOriginSelected) {
+        window.onOriginSelected(place.name || place.formatted_address, mapsState.currentLocation);
+      }
+    });
+  }
+
   // Wire zoom buttons
   document.getElementById('zoom-in')?.addEventListener('click', () => {
     mapsState.map.setZoom(mapsState.map.getZoom() + 1);
@@ -166,12 +194,20 @@ function startGeolocation() {
 async function fetchRealRoutes(origin, dest, mode = 'normal') {
   if (!mapsState.directionsService) throw new Error('Maps not initialized');
 
+  // Ensure we always have an origin — use passed-in, then GPS, then Bengaluru fallback
+  const effectiveOrigin = origin
+    || mapsState.currentLocation
+    || { lat: 12.9716, lng: 77.5946 };
+
+  // Store dest for later scoring
+  mapsState.destLocation = dest;
+
   clearRouteRenderers();
 
   return new Promise((resolve, reject) => {
     mapsState.directionsService.route(
       {
-        origin:      new google.maps.LatLng(origin.lat, origin.lng),
+        origin:      new google.maps.LatLng(effectiveOrigin.lat, effectiveOrigin.lng),
         destination: new google.maps.LatLng(dest.lat, dest.lng),
         travelMode:  google.maps.TravelMode.DRIVING,
         provideRouteAlternatives: true,
@@ -247,12 +283,16 @@ async function fetchRealRoutes(origin, dest, mode = 'normal') {
 
 /**
  * Score routes via the Sathi backend API.
- * Calls GET /api/routes with origin/dest coords.
+ * ALWAYS returns routes with scores — never returns null scores.
  */
 async function scoreRoutesViaBackend(builtRoutes, mode) {
   const orig = mapsState.currentLocation;
-  const dest  = mapsState.destLocation;
-  if (!orig || !dest || !window.SathiAPI) return builtRoutes;
+  const dest = mapsState.destLocation;
+
+  // If no GPS or no API client, return immediately with mock scores
+  if (!orig || !dest || !window.SathiAPI) {
+    return builtRoutes.map((r, i) => ({ ...r, scores: getMockScores(i, mode) }));
+  }
 
   try {
     const data = await window.SathiAPI.fetchRoutes(
@@ -261,7 +301,7 @@ async function scoreRoutesViaBackend(builtRoutes, mode) {
       mode
     );
 
-    // Merge backend scores into the Google Maps routes
+    // Merge backend scores — always fall back to mock if backend score is missing
     return builtRoutes.map((r, i) => {
       const backendRoute = data.routes?.[i];
       return {
@@ -270,6 +310,7 @@ async function scoreRoutesViaBackend(builtRoutes, mode) {
       };
     });
   } catch {
+    // Backend unreachable — use mock scores
     return builtRoutes.map((r, i) => ({ ...r, scores: getMockScores(i, mode) }));
   }
 }

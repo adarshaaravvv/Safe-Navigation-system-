@@ -258,6 +258,11 @@ function renderRouteCards(routes) {
   $id('route-count').textContent = `${routes.length} route${routes.length > 1 ? 's' : ''}`;
 
   routes.forEach((route, i) => {
+    // Guard: always ensure scores exist before rendering
+    if (!route.scores) {
+      route.scores = { safety: 5.0, lighting: 5.0, crowd: 5.0, police: 0, finalScore: 5.0, isNightSafe: false };
+    }
+
     const scores = route.scores;
     const sc = scoreColor(scores.safety);
     const lc = scoreColor(scores.lighting);
@@ -379,13 +384,17 @@ function animateRoutePaths(routes) {
     }, 100 + i * 200);
   });
 
-  // Show/hide pins
-  $id('origin-pin').style.display = 'block';
-  $id('dest-pin').style.display = 'block';
-  $id('origin-pin').style.left = '10%';
-  $id('origin-pin').style.top = '82%';
-  $id('dest-pin').style.left = '52%';
-  $id('dest-pin').style.top = '20%';
+  // Show/hide pins (only present in fallback/mock map mode — safe to skip with Google Maps)
+  $id('origin-pin')?.style && ($id('origin-pin').style.display = 'block');
+  $id('dest-pin')?.style   && ($id('dest-pin').style.display   = 'block');
+  if ($id('origin-pin')) {
+    $id('origin-pin').style.left = '10%';
+    $id('origin-pin').style.top  = '82%';
+  }
+  if ($id('dest-pin')) {
+    $id('dest-pin').style.left = '52%';
+    $id('dest-pin').style.top  = '20%';
+  }
 
   // Hide placeholder text
   $qs('.map-overlay-text')?.classList.add('hidden');
@@ -521,6 +530,36 @@ function endNavigation() {
   setTimeout(() => {
     toast('Share your journey feedback to help others', 'info', '📝');
   }, 2000);
+}
+
+function openInGoogleMaps() {
+  const route = state.routes[state.selectedRouteIndex];
+  let originStr = '';
+  let destStr = '';
+  
+  if (window.SathiMaps) {
+    const sathiState = window.SathiMaps.getState();
+    if (sathiState.currentLocation) {
+      originStr = `${sathiState.currentLocation.lat},${sathiState.currentLocation.lng}`;
+    }
+    if (sathiState.destLocation) {
+      destStr = `${sathiState.destLocation.lat},${sathiState.destLocation.lng}`;
+    }
+  }
+
+  // Fallback to name if lat,lng not available
+  if (!destStr) {
+    destStr = encodeURIComponent($id('dest-input').value.trim() || 'Bengaluru');
+  }
+
+  let mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destStr}&travelmode=driving`;
+  
+  if (originStr) {
+    mapsUrl += `&origin=${originStr}`;
+  }
+
+  window.open(mapsUrl, '_blank');
+  toast('Opening Google Maps API Navigation...', 'info', '🗺️');
 }
 
 // ─── TRAVEL BUDDY ─────────────────────────────────────────────────────
@@ -1154,6 +1193,17 @@ function initEventListeners() {
 }
 
 // ─── MAPS CALLBACKS (called by maps.js) ─────────────────────────────
+// Fired when user picks an origin from Places autocomplete
+window.onOriginSelected = function (placeName, location) {
+  $id('origin-input').value = placeName;
+  // If destination is already set, trigger route search
+  const destInput = $id('dest-input').value.trim();
+  const destLocation = window.SathiMaps?.getState().destLocation;
+  if (destInput && destLocation) {
+    triggerRouteSearch(destInput, destLocation);
+  }
+};
+
 // Fired when user picks a destination from Places autocomplete
 window.onDestinationSelected = function (placeName, location) {
   $id('dest-input').value = placeName;

@@ -999,10 +999,24 @@ body.night-mode .night-overlay { opacity: 1; }
 }
 
 .nav-eta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: 'Outfit', sans-serif;
   font-size: 1.1rem;
   font-weight: 700;
   color: var(--brand-secondary);
+}
+
+.gmaps-link-btn {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--brand-secondary);
+  border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.gmaps-link-btn:hover {
+  background: var(--brand-secondary);
+  color: white;
 }
 
 /* Travel buddy strip */

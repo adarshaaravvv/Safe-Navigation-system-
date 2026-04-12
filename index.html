@@ -1,629 +1,833 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Sathi Navigation — Safe Routes, Safe You</title>
-  <meta name="description" content="Sathi Navigation: AI-powered safety navigation with crowdsourced route scoring, Smart Night Mode, Virtual Travel Buddy, and SOS alerts. Navigate smarter, travel safer." />
+  <meta name="description"
+    content="Sathi Navigation: AI-powered safety navigation with crowdsourced route scoring, Smart Night Mode, Virtual Travel Buddy, and SOS alerts. Navigate smarter, travel safer." />
   <meta name="theme-color" content="#6C3AE8" />
   <meta property="og:title" content="Sathi Navigation" />
-  <meta property="og:description" content="Safety-first navigation with crowdsourced safety scores, night mode routing, and live travel buddy." />
+  <meta property="og:description"
+    content="Safety-first navigation with crowdsourced safety scores, night mode routing, and live travel buddy." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Outfit:wght@400;500;600;700;800;900&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="styles/main.css" />
   <link rel="manifest" href="manifest.json" />
 </head>
+
 <body>
 
-<!-- ═══════════════════════════════════════════════════════════
+  <!-- ═══════════════════════════════════════════════════════════
      SPLASH SCREEN
 ═══════════════════════════════════════════════════════════ -->
-<div id="splash-screen" class="splash">
-  <div class="splash-content">
-    <div class="splash-logo">
-      <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" style="stop-color:#6C3AE8"/>
-            <stop offset="100%" style="stop-color:#38BDF8"/>
-          </linearGradient>
-        </defs>
-        <path d="M40 4 C60 4 76 20 76 40 C76 50 70 65 40 76 C10 65 4 50 4 40 C4 20 20 4 40 4 Z" fill="url(#logoGrad)" opacity="0.15"/>
-        <path d="M40 10 C56.57 10 70 23.43 70 40 C70 48 65 60 40 70 C15 60 10 48 10 40 C10 23.43 23.43 10 40 10 Z" fill="url(#logoGrad)"/>
-        <path d="M50 25 C20 25 20 40 40 40 C60 40 60 55 30 55" stroke="white" stroke-width="6" stroke-linecap="round" fill="none"/>
-        <circle cx="50" cy="25" r="4.5" fill="white"/>
-        <circle cx="30" cy="55" r="4.5" fill="white"/>
-      </svg>
-    </div>
-    <h1 class="splash-title">Sathi</h1>
-    <p class="splash-tagline">Your Safety Companion</p>
-    <div class="splash-loader">
-      <div class="loader-bar"></div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════
-     MAIN APP
-═══════════════════════════════════════════════════════════ -->
-<div id="app" class="app hidden">
-
-  <!-- ── TOP NAV BAR ─────────────────────────────────────── -->
-  <header class="top-bar" id="top-bar">
-    <div class="top-bar-left">
-      <button id="menu-btn" class="icon-btn" aria-label="Menu">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
-      <div class="logo-mark">
-        <svg viewBox="0 0 32 32" fill="none">
+  <div id="splash-screen" class="splash">
+    <div class="splash-content">
+      <div class="splash-logo">
+        <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <linearGradient id="nav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" style="stop-color:#6C3AE8"/>
-              <stop offset="100%" style="stop-color:#38BDF8"/>
+            <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#6C3AE8" />
+              <stop offset="100%" style="stop-color:#38BDF8" />
             </linearGradient>
           </defs>
-          <path d="M16 2 C24 2 30 8 30 16 C30 20 27 26 16 30 C5 26 2 20 2 16 C2 8 8 2 16 2 Z" fill="url(#nav-grad)" opacity="0.15"/>
-          <path d="M16 4 C22.62 4 28 9.38 28 16 C28 19.2 26 24 16 28 C6 24 4 19.2 4 16 C4 9.38 9.38 4 16 4 Z" fill="url(#nav-grad)"/>
-          <path d="M20 10 C8 10 8 16 16 16 C24 16 24 22 12 22" stroke="white" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-          <circle cx="20" cy="10" r="1.5" fill="white"/>
-          <circle cx="12" cy="22" r="1.5" fill="white"/>
+          <path d="M40 4 C60 4 76 20 76 40 C76 50 70 65 40 76 C10 65 4 50 4 40 C4 20 20 4 40 4 Z" fill="url(#logoGrad)"
+            opacity="0.15" />
+          <path d="M40 10 C56.57 10 70 23.43 70 40 C70 48 65 60 40 70 C15 60 10 48 10 40 C10 23.43 23.43 10 40 10 Z"
+            fill="url(#logoGrad)" />
+          <path d="M50 25 C20 25 20 40 40 40 C60 40 60 55 30 55" stroke="white" stroke-width="6" stroke-linecap="round"
+            fill="none" />
+          <circle cx="50" cy="25" r="4.5" fill="white" />
+          <circle cx="30" cy="55" r="4.5" fill="white" />
         </svg>
-        <span class="logo-text">Sathi</span>
+      </div>
+      <h1 class="splash-title">Sathi</h1>
+      <p class="splash-tagline">Your Safety Companion</p>
+      <div class="splash-loader">
+        <div class="loader-bar"></div>
       </div>
     </div>
-    <div class="top-bar-center" id="mode-switcher">
-      <button class="mode-btn active" id="mode-normal" data-mode="normal">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-        Normal
-      </button>
-      <button class="mode-btn" id="mode-night" data-mode="night">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-        Night Mode
-      </button>
-    </div>
-    <div class="top-bar-right">
-      <button id="sos-btn" class="sos-btn" aria-label="SOS Emergency">
-        SOS
-      </button>
-      <button id="profile-btn" class="icon-btn" aria-label="Profile">
-        <div class="avatar">A</div>
-      </button>
-    </div>
-  </header>
+  </div>
 
-  <!-- ── SEARCH PANEL ────────────────────────────────────── -->
-  <div class="search-panel" id="search-panel">
-    <div class="search-container">
-      <div class="search-input-group">
-        <div class="search-dot origin-dot"></div>
-        <input type="text" id="origin-input" class="search-input" placeholder="Your location" autocomplete="off" />
-        <button id="use-location-btn" class="icon-btn small" aria-label="Use current location">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/><circle cx="12" cy="12" r="7" stroke-opacity="0.3"/></svg>
+  <!-- ═══════════════════════════════════════════════════════════
+     MAIN APP
+═══════════════════════════════════════════════════════════ -->
+  <div id="app" class="app hidden">
+
+    <!-- ── TOP NAV BAR ─────────────────────────────────────── -->
+    <header class="top-bar" id="top-bar">
+      <div class="top-bar-left">
+        <button id="menu-btn" class="icon-btn" aria-label="Menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="6" x2="21" y2="6" />
+            <line x1="3" y1="12" x2="21" y2="12" />
+            <line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
         </button>
-      </div>
-      <div class="search-divider">
-        <div class="search-line"></div>
-        <button id="swap-btn" class="swap-btn" aria-label="Swap origin and destination">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 16V4M7 4L3 8M7 4L11 8"/><path d="M17 8v12M17 20l4-4M17 20l-4-4"/></svg>
-        </button>
-      </div>
-      <div class="search-input-group">
-        <div class="search-dot dest-dot"></div>
-        <input type="text" id="dest-input" class="search-input" placeholder="Where to?" autocomplete="off" />
-        <button id="use-dest-location-btn" class="icon-btn small" aria-label="Use current location" style="margin-left: -0.5rem;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/><circle cx="12" cy="12" r="7" stroke-opacity="0.3"/></svg>
-        </button>
-        <button id="clear-dest-btn" class="icon-btn small hidden" aria-label="Clear destination">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-    </div>
-    <div class="filter-chips" id="filter-chips">
-      <button class="chip active" data-filter="all">All Routes</button>
-      <button class="chip" data-filter="safest">Safest</button>
-      <button class="chip" data-filter="fastest">Fastest</button>
-      <button class="chip" data-filter="lit">Well-Lit</button>
-    </div>
-    <div class="buddy-opt-in" style="margin-top: 1rem; padding: 0.5rem 0.75rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-      <div style="display: flex; align-items: center; gap: 0.5rem;">
-        <span style="font-size: 1.2rem;">🧍</span>
-        <div>
-          <div style="font-weight: 600; font-size: 0.9rem;">Travel Buddy</div>
-          <div style="font-size: 0.75rem; color: var(--text-secondary);">Monitor route & track safety</div>
+        <div class="logo-mark">
+          <svg viewBox="0 0 32 32" fill="none">
+            <defs>
+              <linearGradient id="nav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#6C3AE8" />
+                <stop offset="100%" style="stop-color:#38BDF8" />
+              </linearGradient>
+            </defs>
+            <path d="M16 2 C24 2 30 8 30 16 C30 20 27 26 16 30 C5 26 2 20 2 16 C2 8 8 2 16 2 Z" fill="url(#nav-grad)"
+              opacity="0.15" />
+            <path d="M16 4 C22.62 4 28 9.38 28 16 C28 19.2 26 24 16 28 C6 24 4 19.2 4 16 C4 9.38 9.38 4 16 4 Z"
+              fill="url(#nav-grad)" />
+            <path d="M20 10 C8 10 8 16 16 16 C24 16 24 22 12 22" stroke="white" stroke-width="2.5"
+              stroke-linecap="round" fill="none" />
+            <circle cx="20" cy="10" r="1.5" fill="white" />
+            <circle cx="12" cy="22" r="1.5" fill="white" />
+          </svg>
+          <span class="logo-text">Sathi</span>
         </div>
       </div>
-      <div class="toggle active" id="search-buddy-toggle" style="cursor: pointer;">
-        <div class="toggle-thumb"></div>
+      <div class="top-bar-center" id="mode-switcher">
+        <button class="mode-btn active" id="mode-normal" data-mode="normal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="4" />
+            <path
+              d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+          </svg>
+          Normal
+        </button>
+        <button class="mode-btn" id="mode-night" data-mode="night">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+          Night Mode
+        </button>
       </div>
-    </div>
-  </div>
-
-  <!-- ── MAP CONTAINER ──────────────────────────────────── -->
-  <div class="map-container" id="map-container">
-    <!-- Real Google Map renders here -->
-    <div id="google-map" style="width:100%;height:100%;"></div>
-
-    <!-- Fallback placeholder (shown while Maps loads) -->
-    <div class="map-placeholder" id="map-placeholder" style="display:none">
-      <div class="map-grid"></div>
-      <div class="map-overlay-text">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <p>Enter a destination to find safe routes</p>
+      <div class="top-bar-right">
+        <button id="sos-btn" class="sos-btn" aria-label="SOS Emergency">
+          SOS
+        </button>
+        <button id="profile-btn" class="icon-btn" aria-label="Profile">
+          <div class="avatar">A</div>
+        </button>
       </div>
-    </div>
+    </header>
 
-    <!-- SVG overlay for simulated routes (shown only when Maps unavailable) -->
-    <svg class="route-svg" id="route-svg" viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg" style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none">
-      <path id="route-path-1" class="route-path safe-path" d="" stroke-dasharray="1000" stroke-dashoffset="1000"/>
-      <path id="route-path-2" class="route-path medium-path" d="" stroke-dasharray="1000" stroke-dashoffset="1000"/>
-      <path id="route-path-3" class="route-path fast-path" d="" stroke-dasharray="1000" stroke-dashoffset="1000"/>
-    </svg>
-
-    <!-- Map controls (zoom + locate) -->
-    <div class="map-controls">
-      <button class="map-ctrl-btn" id="zoom-in" aria-label="Zoom in">+</button>
-      <button class="map-ctrl-btn" id="zoom-out" aria-label="Zoom out">−</button>
-      <button class="map-ctrl-btn" id="locate-btn" aria-label="My location">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
-      </button>
-    </div>
-
-    <!-- Night overlay tint -->
-    <div class="night-overlay" id="night-overlay"></div>
-  </div>
-
-  <!-- ── ROUTE CARDS PANEL ───────────────────────────────── -->
-  <div class="routes-panel" id="routes-panel">
-    <div class="panel-handle"></div>
-    <div class="panel-header">
-      <h2 class="panel-title" id="panel-title">Safe Routes Found</h2>
-      <span class="route-count" id="route-count">3 routes</span>
-    </div>
-    <div class="routes-list" id="routes-list">
-      <!-- Routes injected by JS -->
-    </div>
-    <!-- Sticky Start Navigation button — always visible -->
-    <div class="panel-nav-footer" id="panel-nav-footer">
-      <button class="panel-start-nav-btn" id="panel-start-nav-btn" onclick="startNavigation(window._sathi_selectedIdx || 0)">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-        Start Navigation
-      </button>
-    </div>
-  </div>
-
-  <!-- ── NAVIGATION ACTIVE VIEW ─────────────────────────── -->
-  <div class="nav-active-view hidden" id="nav-active-view">
-    <!-- Top navigation bar -->
-    <div class="nav-top-strip" id="nav-top-strip">
-      <button id="end-nav-btn" class="icon-btn nav-back">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      </button>
-      <div class="nav-instruction" id="nav-instruction">
-        <span class="turn-icon">↑</span>
-        <div class="instruction-text">
-          <span class="street-name" id="street-name">Continue on MG Road</span>
-          <span class="distance-ahead" id="distance-ahead">400 m</span>
-        </div>
-      </div>
-      <div class="nav-eta">
-        <span id="eta">14 min</span>
-        <div style="display: flex; gap: 0.25rem;">
-          <button id="nav-theme-toggle" class="icon-btn small" title="Toggle Theme">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="sun-icon hidden"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="moon-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    <!-- ── SEARCH PANEL ────────────────────────────────────── -->
+    <div class="search-panel" id="search-panel">
+      <div class="search-container">
+        <div class="search-input-group">
+          <div class="search-dot origin-dot"></div>
+          <input type="text" id="origin-input" class="search-input" placeholder="Your location" autocomplete="off" />
+          <button id="use-location-btn" class="icon-btn small" aria-label="Use current location">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 1v4M12 19v4M1 12h4M19 12h4" />
+              <circle cx="12" cy="12" r="7" stroke-opacity="0.3" />
+            </svg>
           </button>
-          <button id="open-gmaps-btn" class="icon-btn small gmaps-link-btn" title="Open in Google Maps App" onclick="openInGoogleMaps()">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+        </div>
+        <div class="search-divider">
+          <div class="search-line"></div>
+          <button id="swap-btn" class="swap-btn" aria-label="Swap origin and destination">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M7 16V4M7 4L3 8M7 4L11 8" />
+              <path d="M17 8v12M17 20l4-4M17 20l-4-4" />
+            </svg>
+          </button>
+        </div>
+        <div class="search-input-group">
+          <div class="search-dot dest-dot"></div>
+          <input type="text" id="dest-input" class="search-input" placeholder="Where to?" autocomplete="off" />
+          <button id="use-dest-location-btn" class="icon-btn small" aria-label="Use current location"
+            style="margin-left: -0.5rem;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 1v4M12 19v4M1 12h4M19 12h4" />
+              <circle cx="12" cy="12" r="7" stroke-opacity="0.3" />
+            </svg>
+          </button>
+          <button id="clear-dest-btn" class="icon-btn small hidden" aria-label="Clear destination">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
           </button>
         </div>
       </div>
-    </div>
-
-    <!-- Travel Buddy strip -->
-    <div class="buddy-strip" id="buddy-strip">
-      <div class="buddy-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <div class="filter-chips" id="filter-chips">
+        <button class="chip active" data-filter="all">All Routes</button>
+        <button class="chip" data-filter="safest">Safest</button>
+        <button class="chip" data-filter="fastest">Fastest</button>
+        <button class="chip" data-filter="lit">Well-Lit</button>
       </div>
-      <div class="buddy-info">
-        <span class="buddy-label" id="buddy-label">Travel Buddy Active</span>
-        <span class="buddy-status" id="buddy-status-text">Monitoring your journey · <span id="buddy-time">0:00</span></span>
-      </div>
-      <div class="buddy-indicators" style="display: flex; align-items: center; gap: 0.5rem;">
-        <div class="indicator safe" id="ind-safety" title="Safety">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z"/></svg>
+      <div class="buddy-opt-in"
+        style="margin-top: 1rem; padding: 0.5rem 0.75rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <span style="font-size: 1.2rem;">🧍</span>
+          <div>
+            <div style="font-weight: 600; font-size: 0.9rem;">Travel Buddy</div>
+            <div style="font-size: 0.75rem; color: var(--text-secondary);">Monitor route & track safety</div>
+          </div>
         </div>
-        <div class="indicator" id="ind-location" title="Location Shared">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
-        </div>
-        <div class="toggle active" id="nav-buddy-toggle" style="cursor: pointer; transform: scale(0.85); transform-origin: right;">
+        <div class="toggle active" id="search-buddy-toggle" style="cursor: pointer;">
           <div class="toggle-thumb"></div>
         </div>
       </div>
     </div>
 
-    <!-- Live feedback buttons -->
-    <div class="live-feedback" id="live-feedback">
-      <span class="feedback-label">How's this area?</span>
-      <div class="feedback-btns">
-        <button class="feedback-btn" id="fb-safe" data-type="safe">
-          <span class="fb-icon">🛡️</span>
-          <span>Safe</span>
-        </button>
-        <button class="feedback-btn" id="fb-unsafe" data-type="unsafe">
-          <span class="fb-icon">⚠️</span>
-          <span>Unsafe</span>
-        </button>
-        <button class="feedback-btn" id="fb-lit" data-type="lit">
-          <span class="fb-icon">💡</span>
-          <span>Lit</span>
-        </button>
-        <button class="feedback-btn" id="fb-dark" data-type="dark">
-          <span class="fb-icon">🌑</span>
-          <span>Dark</span>
-        </button>
-        <button class="feedback-btn" id="fb-crowd" data-type="crowd">
-          <span class="fb-icon">👥</span>
-          <span>Crowd</span>
-        </button>
-      </div>
-    </div>
+    <!-- ── MAP CONTAINER ──────────────────────────────────── -->
+    <div class="map-container" id="map-container">
+      <!-- Real Google Map renders here -->
+      <div id="google-map" style="width:100%;height:100%;"></div>
 
-    <!-- Bottom nav info strip -->
-    <div class="nav-bottom-strip">
-      <div class="nav-bottom-info">
-        <span class="nb-label">Arrival</span>
-        <span class="nb-value" id="arrival-time">10:45 PM</span>
-      </div>
-      <div class="nav-bottom-info">
-        <span class="nb-label">Distance</span>
-        <span class="nb-value" id="remaining-dist">3.2 km</span>
-      </div>
-      <div class="nav-bottom-info center">
-        <div class="safety-pulse">
-          <svg viewBox="0 0 32 32" fill="none"><path d="M16 2L28 8V18C28 24 22 29 16 31C10 29 4 24 4 18V8Z" fill="#22c55e" opacity="0.2"/><path d="M16 5L26 10V18C26 23 21 27 16 29C11 27 6 23 6 18V10Z" fill="#22c55e"/><path d="M10 16l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </div>
-        <span class="nb-safety">8.4</span>
-      </div>
-      <button class="sos-pill" id="sos-nav-btn">SOS</button>
-    </div>
-  </div>
-
-  <!-- ── SIDEBAR / DRAWER ───────────────────────────────── -->
-  <div class="sidebar-overlay" id="sidebar-overlay"></div>
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <div class="sidebar-profile">
-        <div class="sidebar-avatar">A</div>
-        <div class="sidebar-user-info">
-          <span class="sidebar-name">Adarsha Arav</span>
-          <span class="sidebar-email">adarsha@sathi.app</span>
-        </div>
-      </div>
-      <button id="close-sidebar-btn" class="icon-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="#" class="sidebar-link active">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-        Navigate
-      </a>
-      <a href="#" class="sidebar-link" id="open-emergency">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z"/></svg>
-        Emergency Contacts
-      </a>
-      <a href="#" class="sidebar-link" id="open-offline">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Offline Maps
-      </a>
-      <a href="#" class="sidebar-link" id="open-safety-report">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Safety Report
-      </a>
-      <a href="#" class="sidebar-link" id="open-voice-sos">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
-        Voice SOS Setup
-      </a>
-      <a href="#" class="sidebar-link">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 0 4.93 4.93A10 10 0 0 0 4.93 19.07A10 10 0 0 0 19.07 19.07A10 10 0 0 0 19.07 4.93Z" opacity="0.3"/></svg>
-        Settings
-      </a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="safety-stats-mini">
-        <div class="stat-mini">
-          <span class="stat-val">47</span>
-          <span class="stat-lab">Safe trips</span>
-        </div>
-        <div class="stat-mini">
-          <span class="stat-val">120</span>
-          <span class="stat-lab">Reviews given</span>
-        </div>
-        <div class="stat-mini">
-          <span class="stat-val">8.2</span>
-          <span class="stat-lab">Avg safety</span>
-        </div>
-      </div>
-    </div>
-  </aside>
-
-  <!-- ── SOS MODAL ──────────────────────────────────────── -->
-  <div class="modal-overlay hidden" id="sos-modal-overlay">
-    <div class="modal sos-modal" id="sos-modal">
-      <div class="sos-modal-icon">
-        <svg viewBox="0 0 80 80" fill="none">
-          <circle cx="40" cy="40" r="36" fill="#ef4444" opacity="0.15"/>
-          <circle cx="40" cy="40" r="28" fill="#ef4444" opacity="0.25"/>
-          <circle cx="40" cy="40" r="20" fill="#ef4444"/>
-          <text x="40" y="48" text-anchor="middle" fill="white" font-size="18" font-weight="900" font-family="Outfit">SOS</text>
-        </svg>
-      </div>
-      <h2 class="modal-title">Send SOS Alert</h2>
-      <p class="modal-desc">Your live location and route will be shared with your emergency contacts immediately.</p>
-      <div class="sos-contacts-list" id="sos-contacts-preview">
-        <div class="contact-chip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          Amma (+91 99810 XXXXX)
-        </div>
-        <div class="contact-chip">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-          Nanna (+91 98760 XXXXX)
-        </div>
-      </div>
-      <div class="sos-countdown hidden" id="sos-countdown">
-        <div class="countdown-ring">
-          <svg viewBox="0 0 60 60">
-            <circle cx="30" cy="30" r="26" stroke="#ef4444" stroke-width="4" fill="none" stroke-dasharray="163" stroke-dashoffset="0" id="countdown-circle"/>
+      <!-- Fallback placeholder (shown while Maps loads) -->
+      <div class="map-placeholder" id="map-placeholder" style="display:none">
+        <div class="map-grid"></div>
+        <div class="map-overlay-text">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+            <circle cx="12" cy="10" r="3" />
           </svg>
-          <span id="countdown-num">5</span>
-        </div>
-        <p>Sending SOS in <span id="countdown-sec">5</span> seconds...</p>
-      </div>
-      <div class="modal-actions" id="sos-action-btns">
-        <button class="btn btn-danger btn-lg" id="confirm-sos-btn">Send SOS Now</button>
-        <button class="btn btn-ghost" id="cancel-sos-btn">Cancel</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- ── ARE YOU OKAY MODAL ─────────────────────────────── -->
-  <div class="modal-overlay hidden" id="okay-modal-overlay">
-    <div class="modal okay-modal">
-      <div class="okay-modal-icon">🛑</div>
-      <h2 class="modal-title" id="okay-modal-title">Are you okay?</h2>
-      <p class="modal-desc" id="okay-modal-desc">You've been stationary for over 1 minute. We want to make sure you're safe.</p>
-      <div id="okay-countdown-display" style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--danger-red); margin: 0.5rem 0;">Auto SOS in 60s...</div>
-      <div class="modal-actions">
-        <button class="btn btn-primary btn-lg" id="okay-yes-btn">✅ I'm Okay</button>
-        <div style="display: flex; gap: 0.5rem;">
-          <input type="number" id="custom-timer-input" class="form-input" value="5" min="1" style="width: 80px; text-align: center;" aria-label="Wait minutes" />
-          <button class="btn btn-outline" id="okay-timer-btn" style="flex: 1;">⏱ Wait more (min)</button>
+          <p>Enter a destination to find safe routes</p>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ── EMERGENCY CONTACTS MODAL ───────────────────────── -->
-  <div class="modal-overlay hidden" id="contacts-modal-overlay">
-    <div class="modal contacts-modal">
-      <div class="modal-header">
-        <h2 class="modal-title">Emergency Contacts</h2>
-        <button class="icon-btn" id="close-contacts-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <!-- SVG overlay for simulated routes (shown only when Maps unavailable) -->
+      <svg class="route-svg" id="route-svg" viewBox="0 0 700 500" xmlns="http://www.w3.org/2000/svg"
+        style="display:none;position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none">
+        <path id="route-path-1" class="route-path safe-path" d="" stroke-dasharray="1000" stroke-dashoffset="1000" />
+        <path id="route-path-2" class="route-path medium-path" d="" stroke-dasharray="1000" stroke-dashoffset="1000" />
+        <path id="route-path-3" class="route-path fast-path" d="" stroke-dasharray="1000" stroke-dashoffset="1000" />
+      </svg>
+
+      <!-- Map controls (zoom + locate) -->
+      <div class="map-controls">
+        <button class="map-ctrl-btn" id="zoom-in" aria-label="Zoom in">+</button>
+        <button class="map-ctrl-btn" id="zoom-out" aria-label="Zoom out">−</button>
+        <button class="map-ctrl-btn" id="locate-btn" aria-label="My location">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M12 1v4M12 19v4M1 12h4M19 12h4" />
+          </svg>
         </button>
       </div>
-      <p class="modal-desc" style="margin-bottom:1.5rem">These people will be notified if you trigger SOS or don't respond to a safety check.</p>
-      <div class="contacts-list" id="contacts-list">
-        <div class="contact-card">
-          <div class="contact-avatar">A</div>
-          <div class="contact-info">
-            <span class="contact-name">Amma</span>
-            <span class="contact-phone">+91 99810 XXXXX</span>
-          </div>
-          <button class="icon-btn danger-subtle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-          </button>
-        </div>
-        <div class="contact-card">
-          <div class="contact-avatar">N</div>
-          <div class="contact-info">
-            <span class="contact-name">Nanna</span>
-            <span class="contact-phone">+91 98760 XXXXX</span>
-          </div>
-          <button class="icon-btn danger-subtle">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
-          </button>
-        </div>
-      </div>
-      <div class="add-contact-form" id="add-contact-form">
-        <input type="text" class="form-input" id="new-contact-name" placeholder="Contact name" />
-        <input type="tel" class="form-input" id="new-contact-phone" placeholder="+91 XXXXX XXXXX" />
-        <button class="btn btn-primary" id="add-contact-btn">Add Contact</button>
-      </div>
-    </div>
-  </div>
 
-  <!-- ── OFFLINE MAPS MODAL ─────────────────────────────── -->
-  <div class="modal-overlay hidden" id="offline-modal-overlay">
-    <div class="modal offline-modal">
-      <div class="modal-header">
-        <h2 class="modal-title">Offline Maps</h2>
-        <button class="icon-btn" id="close-offline-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <!-- Night overlay tint -->
+      <div class="night-overlay" id="night-overlay"></div>
+    </div>
+
+    <!-- ── ROUTE CARDS PANEL ───────────────────────────────── -->
+    <div class="routes-panel" id="routes-panel">
+      <div class="panel-handle"></div>
+      <div class="panel-header">
+        <h2 class="panel-title" id="panel-title">Safe Routes Found</h2>
+        <span class="route-count" id="route-count">3 routes</span>
+      </div>
+      <div class="routes-list" id="routes-list">
+        <!-- Routes injected by JS -->
+      </div>
+      <!-- Sticky Start Navigation button — always visible -->
+      <div class="panel-nav-footer" id="panel-nav-footer">
+        <button class="panel-start-nav-btn" id="panel-start-nav-btn"
+          onclick="startNavigation(window._sathi_selectedIdx || 0)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11" />
+          </svg>
+          Start Navigation
         </button>
       </div>
-      <p class="modal-desc">Download maps and safety data for offline use. Routes will still show safety scores without internet.</p>
-      <div class="offline-regions">
-        <div class="region-card" data-region="bengaluru">
-          <div class="region-icon">🏙️</div>
-          <div class="region-info">
-            <span class="region-name">Bengaluru</span>
-            <span class="region-size">148 MB · Safety data included</span>
-          </div>
-          <button class="btn btn-outline btn-sm download-btn" data-region="bengaluru">Download</button>
-        </div>
-        <div class="region-card" data-region="mumbai">
-          <div class="region-icon">🌆</div>
-          <div class="region-info">
-            <span class="region-name">Mumbai</span>
-            <span class="region-size">162 MB · Safety data included</span>
-          </div>
-          <button class="btn btn-outline btn-sm download-btn" data-region="mumbai">Download</button>
-        </div>
-        <div class="region-card downloaded" data-region="delhi">
-          <div class="region-icon">🏛️</div>
-          <div class="region-info">
-            <span class="region-name">Delhi NCR</span>
-            <span class="region-size">181 MB · Downloaded ✓</span>
-          </div>
-          <button class="btn btn-ghost btn-sm">Remove</button>
-        </div>
-      </div>
-      <div class="offline-storage-bar">
-        <div class="storage-label">
-          <span>Storage used</span>
-          <span>181 MB / 2 GB</span>
-        </div>
-        <div class="storage-track">
-          <div class="storage-fill" style="width: 9%"></div>
-        </div>
-      </div>
     </div>
-  </div>
 
-  <!-- ── VOICE SOS MODAL ────────────────────────────────── -->
-  <div class="modal-overlay hidden" id="voice-modal-overlay">
-    <div class="modal voice-modal">
-      <div class="modal-header">
-        <h2 class="modal-title">Voice SOS Setup</h2>
-        <button class="icon-btn" id="close-voice-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    <!-- ── NAVIGATION ACTIVE VIEW ─────────────────────────── -->
+    <div class="nav-active-view hidden" id="nav-active-view">
+      <!-- Top navigation bar -->
+      <div class="nav-top-strip" id="nav-top-strip">
+        <button id="end-nav-btn" class="icon-btn nav-back">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <path d="M19 12H5M12 19l-7-7 7-7" />
+          </svg>
         </button>
+        <div class="nav-instruction" id="nav-instruction">
+          <span class="turn-icon">↑</span>
+          <div class="instruction-text">
+            <span class="street-name" id="street-name">Continue on MG Road</span>
+            <span class="distance-ahead" id="distance-ahead">400 m</span>
+          </div>
+        </div>
+        <div class="nav-eta">
+          <span id="eta">14 min</span>
+          <div style="display: flex; gap: 0.25rem;">
+            <button id="nav-theme-toggle" class="icon-btn small" title="Toggle Theme">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="sun-icon hidden">
+                <circle cx="12" cy="12" r="4" />
+                <path
+                  d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />
+              </svg>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="moon-icon">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+              </svg>
+            </button>
+            <button id="open-gmaps-btn" class="icon-btn small gmaps-link-btn" title="Open in Google Maps App"
+              onclick="openInGoogleMaps()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3" />
+              </svg>
+            </button>
+          </div>
+        </div>
       </div>
-      <div class="voice-setup">
-        <div class="voice-demo">
-          <div class="mic-animation" id="mic-anim">
-            <div class="mic-ring r1"></div>
-            <div class="mic-ring r2"></div>
-            <div class="mic-ring r3"></div>
-            <svg viewBox="0 0 48 48" fill="none" class="mic-icon">
-              <path d="M24 4a7 7 0 0 0-7 7v12a7 7 0 0 0 14 0V11a7 7 0 0 0-7-7z" fill="#6C3AE8"/>
-              <path d="M10 24v2a14 14 0 0 0 28 0v-2M24 40v6M18 46h12" stroke="#6C3AE8" stroke-width="2.5" stroke-linecap="round"/>
+
+      <!-- Travel Buddy strip -->
+      <div class="buddy-strip" id="buddy-strip">
+        <div class="buddy-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+          </svg>
+        </div>
+        <div class="buddy-info">
+          <span class="buddy-label" id="buddy-label">Travel Buddy Active</span>
+          <span class="buddy-status" id="buddy-status-text">Monitoring your journey · <span
+              id="buddy-time">0:00</span></span>
+        </div>
+        <div class="buddy-indicators" style="display: flex; align-items: center; gap: 0.5rem;">
+          <span id="voice-status-badge"
+            style="display:none; font-size:0.65rem; font-weight:600; padding:0.15rem 0.5rem; border-radius:999px; color:#fff;"></span>
+          <div class="indicator safe" id="ind-safety" title="Safety">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z" />
             </svg>
           </div>
-          <p class="voice-prompt">Say <strong>"Help Me"</strong> or <strong>"Bachao"</strong> to trigger SOS</p>
-        </div>
-        <div class="voice-settings">
-          <label class="toggle-setting">
-            <span>Enable Voice SOS</span>
-            <div class="toggle" id="voice-toggle">
-              <div class="toggle-thumb"></div>
+          <div class="indicator" id="ind-location" title="Location Shared">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 1v4M12 19v4M1 12h4M19 12h4" />
+            </svg>
+          </div>
+          <!-- Voice SOS Toggle -->
+          <div class="toggle" id="nav-voice-toggle"
+            style="cursor: pointer; transform: scale(0.85); transform-origin: right;" title="Voice SOS Toggle">
+            <div class="toggle-thumb" style="display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
+                style="color:var(--brand-primary);">
+                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z" />
+                <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+              </svg>
             </div>
-          </label>
-          <label class="toggle-setting">
-            <span>Active during navigation only</span>
-            <div class="toggle active" id="nav-only-toggle">
-              <div class="toggle-thumb"></div>
+          </div>
+
+          <!-- Travel Buddy Toggle -->
+          <div class="toggle active" id="nav-buddy-toggle"
+            style="cursor: pointer; transform: scale(0.85); transform-origin: right; margin-left:0.2rem;"
+            title="Travel Buddy Toggle">
+            <div class="toggle-thumb" style="display:flex; align-items:center; justify-content:center;">
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"
+                style="color:var(--brand-primary);">
+                <circle cx="12" cy="8" r="4" />
+                <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+              </svg>
             </div>
-          </label>
-        </div>
-        <div class="voice-note">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          <p>Voice listening is processed <strong>locally on your device</strong>. No audio is sent to servers. Battery impact is minimal (≈2-3%).</p>
+          </div>
         </div>
       </div>
-    </div>
-  </div>
 
-  <!-- ── SAFETY REPORT MODAL ───────────────────────────── -->
-  <div class="modal-overlay hidden" id="report-modal-overlay">
-    <div class="modal report-modal">
-      <div class="modal-header">
-        <h2 class="modal-title">Area Safety Report</h2>
-        <button class="icon-btn" id="close-report-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      <!-- Live feedback buttons -->
+      <div class="live-feedback" id="live-feedback">
+        <span class="feedback-label">How's this area?</span>
+        <div class="feedback-btns">
+          <button class="feedback-btn" id="fb-safe" data-type="safe">
+            <span class="fb-icon">🛡️</span>
+            <span>Safe</span>
+          </button>
+          <button class="feedback-btn" id="fb-unsafe" data-type="unsafe">
+            <span class="fb-icon">⚠️</span>
+            <span>Unsafe</span>
+          </button>
+          <button class="feedback-btn" id="fb-lit" data-type="lit">
+            <span class="fb-icon">💡</span>
+            <span>Lit</span>
+          </button>
+          <button class="feedback-btn" id="fb-dark" data-type="dark">
+            <span class="fb-icon">🌑</span>
+            <span>Dark</span>
+          </button>
+          <button class="feedback-btn" id="fb-crowd" data-type="crowd">
+            <span class="fb-icon">👥</span>
+            <span>Crowd</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Bottom nav info strip -->
+      <div class="nav-bottom-strip">
+        <div class="nav-bottom-info">
+          <span class="nb-label">Arrival</span>
+          <span class="nb-value" id="arrival-time">10:45 PM</span>
+        </div>
+        <div class="nav-bottom-info">
+          <span class="nb-label">Distance</span>
+          <span class="nb-value" id="remaining-dist">3.2 km</span>
+        </div>
+        <div class="nav-bottom-info center">
+          <div class="safety-pulse">
+            <svg viewBox="0 0 32 32" fill="none">
+              <path d="M16 2L28 8V18C28 24 22 29 16 31C10 29 4 24 4 18V8Z" fill="#22c55e" opacity="0.2" />
+              <path d="M16 5L26 10V18C26 23 21 27 16 29C11 27 6 23 6 18V10Z" fill="#22c55e" />
+              <path d="M10 16l4 4 8-8" stroke="white" stroke-width="2.5" stroke-linecap="round"
+                stroke-linejoin="round" />
+            </svg>
+          </div>
+          <span class="nb-safety">8.4</span>
+        </div>
+        <button class="sos-pill" id="sos-nav-btn">SOS</button>
+      </div>
+    </div>
+
+    <!-- ── SIDEBAR / DRAWER ───────────────────────────────── -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-profile">
+          <div class="sidebar-avatar">A</div>
+          <div class="sidebar-user-info">
+            <span class="sidebar-name">Adarsha Arav</span>
+            <span class="sidebar-email">adarsha@sathi.app</span>
+          </div>
+        </div>
+        <button id="close-sidebar-btn" class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
       </div>
-      <div class="report-area-selector">
-        <select class="form-select" id="report-area">
-          <option>MG Road, Bengaluru</option>
-          <option>Koramangala</option>
-          <option>Indiranagar</option>
-          <option>Whitefield</option>
-        </select>
+      <nav class="sidebar-nav">
+        <a href="#" class="sidebar-link active">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="3 11 22 2 13 21 11 13 3 11" />
+          </svg>
+          Navigate
+        </a>
+        <a href="#" class="sidebar-link" id="open-emergency">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z" />
+          </svg>
+          Emergency Contacts
+        </a>
+        <a href="#" class="sidebar-link" id="open-offline">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          Offline Maps
+        </a>
+        <a href="#" class="sidebar-link" id="open-safety-report">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          Safety Report
+        </a>
+        <a href="#" class="sidebar-link" id="open-voice-sos">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8" />
+          </svg>
+          Voice SOS Setup
+        </a>
+        <a href="#" class="sidebar-link">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M19.07 4.93A10 10 0 0 0 4.93 4.93A10 10 0 0 0 4.93 19.07A10 10 0 0 0 19.07 19.07A10 10 0 0 0 19.07 4.93Z"
+              opacity="0.3" />
+          </svg>
+          Settings
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="safety-stats-mini">
+          <div class="stat-mini">
+            <span class="stat-val">47</span>
+            <span class="stat-lab">Safe trips</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-val">120</span>
+            <span class="stat-lab">Reviews given</span>
+          </div>
+          <div class="stat-mini">
+            <span class="stat-val">8.2</span>
+            <span class="stat-lab">Avg safety</span>
+          </div>
+        </div>
       </div>
-      <div class="report-scores">
-        <div class="report-score-card safety">
-          <div class="rs-label">Safety</div>
-          <div class="rs-value">8.4</div>
-          <div class="rs-bar"><div class="rs-fill" style="width:84%"></div></div>
-          <div class="rs-meta">Based on 247 reviews</div>
+    </aside>
+
+    <!-- ── SOS MODAL ──────────────────────────────────────── -->
+    <div class="modal-overlay hidden" id="sos-modal-overlay">
+      <div class="modal sos-modal" id="sos-modal">
+        <div class="sos-modal-icon">
+          <svg viewBox="0 0 80 80" fill="none">
+            <circle cx="40" cy="40" r="36" fill="#ef4444" opacity="0.15" />
+            <circle cx="40" cy="40" r="28" fill="#ef4444" opacity="0.25" />
+            <circle cx="40" cy="40" r="20" fill="#ef4444" />
+            <text x="40" y="48" text-anchor="middle" fill="white" font-size="18" font-weight="900"
+              font-family="Outfit">SOS</text>
+          </svg>
         </div>
-        <div class="report-score-card lighting">
-          <div class="rs-label">Lighting</div>
-          <div class="rs-value">7.1</div>
-          <div class="rs-bar"><div class="rs-fill" style="width:71%"></div></div>
-          <div class="rs-meta">Based on 199 reviews</div>
+        <h2 class="modal-title">Send SOS Alert</h2>
+        <p class="modal-desc">Your live location and route will be shared with your emergency contacts immediately.</p>
+        <div class="sos-contacts-list" id="sos-contacts-preview">
+          <!-- Populated dynamically from saved emergency contacts -->
         </div>
-        <div class="report-score-card crowd">
-          <div class="rs-label">Crowd</div>
-          <div class="rs-value">6.8</div>
-          <div class="rs-bar"><div class="rs-fill" style="width:68%"></div></div>
-          <div class="rs-meta">Based on 211 reviews</div>
+        <div class="sos-countdown hidden" id="sos-countdown">
+          <div class="countdown-ring">
+            <svg viewBox="0 0 60 60">
+              <circle cx="30" cy="30" r="26" stroke="#ef4444" stroke-width="4" fill="none" stroke-dasharray="163"
+                stroke-dashoffset="0" id="countdown-circle" />
+            </svg>
+            <span id="countdown-num">5</span>
+          </div>
+          <p>Sending SOS in <span id="countdown-sec">5</span> seconds...</p>
         </div>
-        <div class="report-score-card police">
-          <div class="rs-label">Police Stations</div>
-          <div class="rs-value">3</div>
-          <div class="rs-bar"><div class="rs-fill" style="width:60%"></div></div>
-          <div class="rs-meta">Within 500m radius</div>
-        </div>
-      </div>
-      <div class="report-chart">
-        <h3 class="chart-title">Safety by Time of Day</h3>
-        <div class="time-chart" id="time-chart">
-          <!-- Generated by JS -->
+        <div class="modal-actions" id="sos-action-btns">
+          <button class="btn btn-danger btn-lg" id="confirm-sos-btn">Send SOS Now</button>
+          <button class="btn btn-ghost" id="cancel-sos-btn">Cancel</button>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- ── TOAST NOTIFICATIONS ────────────────────────────── -->
-  <div class="toast-container" id="toast-container"></div>
+    <!-- ── ARE YOU OKAY MODAL ─────────────────────────────── -->
+    <div class="modal-overlay hidden" id="okay-modal-overlay">
+      <div class="modal okay-modal">
+        <div class="okay-modal-icon">🛑</div>
+        <h2 class="modal-title" id="okay-modal-title">Are you okay?</h2>
+        <p class="modal-desc" id="okay-modal-desc">You've been stationary for over 1 minute. We want to make sure you're
+          safe.</p>
+        <div id="okay-countdown-display"
+          style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--danger-red); margin: 0.5rem 0;">
+          Auto SOS in 60s...</div>
+        <div class="modal-actions">
+          <button class="btn btn-primary btn-lg" id="okay-yes-btn">✅ I'm Okay</button>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="number" id="custom-timer-input" class="form-input" value="5" min="1"
+              style="width: 80px; text-align: center;" aria-label="Wait minutes" />
+            <button class="btn btn-outline" id="okay-timer-btn" style="flex: 1;">⏱ Wait more (min)</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
-  <!-- ── BOTTOM NAV ─────────────────────────────────────── -->
-  <nav class="bottom-nav" id="bottom-nav">
-    <button class="bottom-nav-btn active" data-view="map">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-      <span>Navigate</span>
-    </button>
-    <button class="bottom-nav-btn" data-view="report" id="report-nav-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
-      <span>Safety Map</span>
-    </button>
-    <button class="bottom-nav-btn" data-view="buddy" id="buddy-nav-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      <span>Buddy</span>
-    </button>
-    <button class="bottom-nav-btn" data-view="profile" id="profile-nav-btn">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-      <span>Profile</span>
-    </button>
-  </nav>
+    <!-- ── EMERGENCY CONTACTS MODAL ───────────────────────── -->
+    <div class="modal-overlay hidden" id="contacts-modal-overlay">
+      <div class="modal contacts-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Emergency Contacts</h2>
+          <button class="icon-btn" id="close-contacts-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <p class="modal-desc" style="margin-bottom:1.5rem">These people will be notified if you trigger SOS or don't
+          respond to a safety check.</p>
+        <div class="contacts-list" id="contacts-list">
+          <!-- Contacts are added by the user and saved to localStorage -->
+        </div>
+        <div class="add-contact-form" id="add-contact-form">
+          <input type="text" class="form-input" id="new-contact-name" placeholder="Contact name" />
+          <input type="tel" class="form-input" id="new-contact-phone" placeholder="+91 XXXXX XXXXX" />
+          <button class="btn btn-primary" id="add-contact-btn">Add Contact</button>
+        </div>
+      </div>
+    </div>
 
-</div><!-- /app -->
+    <!-- ── OFFLINE MAPS MODAL ─────────────────────────────── -->
+    <div class="modal-overlay hidden" id="offline-modal-overlay">
+      <div class="modal offline-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Offline Maps</h2>
+          <button class="icon-btn" id="close-offline-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <p class="modal-desc">Download maps and safety data for offline use. Routes will still show safety scores
+          without internet.</p>
+        <div class="offline-regions">
+          <div class="region-card" data-region="bengaluru">
+            <div class="region-icon">🏙️</div>
+            <div class="region-info">
+              <span class="region-name">Bengaluru</span>
+              <span class="region-size">148 MB · Safety data included</span>
+            </div>
+            <button class="btn btn-outline btn-sm download-btn" data-region="bengaluru">Download</button>
+          </div>
+          <div class="region-card" data-region="mumbai">
+            <div class="region-icon">🌆</div>
+            <div class="region-info">
+              <span class="region-name">Mumbai</span>
+              <span class="region-size">162 MB · Safety data included</span>
+            </div>
+            <button class="btn btn-outline btn-sm download-btn" data-region="mumbai">Download</button>
+          </div>
+          <div class="region-card downloaded" data-region="delhi">
+            <div class="region-icon">🏛️</div>
+            <div class="region-info">
+              <span class="region-name">Delhi NCR</span>
+              <span class="region-size">181 MB · Downloaded ✓</span>
+            </div>
+            <button class="btn btn-ghost btn-sm">Remove</button>
+          </div>
+        </div>
+        <div class="offline-storage-bar">
+          <div class="storage-label">
+            <span>Storage used</span>
+            <span>181 MB / 2 GB</span>
+          </div>
+          <div class="storage-track">
+            <div class="storage-fill" style="width: 9%"></div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-<!-- Google Maps JavaScript API (Places + Directions) -->
-<script>
-  // Expose the API key for use in app.js
-  window.GOOGLE_MAPS_API_KEY = 'AIzaSyAkds1mAskgEOoItHhpFKRqCp2eGBRHBKI';
-</script>
-<script
-  src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkds1mAskgEOoItHhpFKRqCp2eGBRHBKI&libraries=places,geometry&callback=onGoogleMapsReady"
-  async defer>
-</script>
-<script src="js/api.js"></script>
-<script src="js/maps.js"></script>
-<script src="js/app.js"></script>
+    <!-- ── VOICE SOS MODAL ────────────────────────────────── -->
+    <div class="modal-overlay hidden" id="voice-modal-overlay">
+      <div class="modal voice-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">🎤 Voice SOS Setup</h2>
+          <button class="icon-btn" id="close-voice-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Browser support warning -->
+        <div id="voice-unsupported-banner" class="voice-unsupported hidden">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <p>Voice SOS requires Chrome or Edge. Your current browser does not support the Web Speech API.</p>
+        </div>
+
+        <!-- Tab nav -->
+        <div class="voice-tabs">
+          <button class="voice-tab active" data-tab="setup">Setup</button>
+          <button class="voice-tab" data-tab="settings">Settings</button>
+        </div>
+
+        <!-- TAB: Setup -->
+        <div class="voice-tab-content" id="tab-setup">
+          <div class="voice-demo">
+            <div class="mic-animation" id="mic-anim">
+              <div class="mic-ring r1"></div>
+              <div class="mic-ring r2"></div>
+              <div class="mic-ring r3"></div>
+              <svg viewBox="0 0 48 48" fill="none" class="mic-icon">
+                <path d="M24 4a7 7 0 0 0-7 7v12a7 7 0 0 0 14 0V11a7 7 0 0 0-7-7z" fill="#6C3AE8" />
+                <path d="M10 24v2a14 14 0 0 0 28 0v-2M24 40v6M18 46h12" stroke="#6C3AE8" stroke-width="2.5"
+                  stroke-linecap="round" />
+              </svg>
+            </div>
+            <p class="voice-prompt">Say <strong>"Help Me"</strong> to trigger SOS</p>
+          </div>
+
+          <!-- Current saved phrase -->
+          <div class="saved-phrase-row">
+            <span class="saved-phrase-label">Active phrase:</span>
+            <span class="saved-phrase-chip" id="saved-phrase-text">"Help Me"</span>
+          </div>
+
+          <!-- Set custom phrase -->
+          <div class="phrase-input-group">
+            <label class="phrase-label">Set your wake phrase</label>
+            <div class="phrase-input-row">
+              <input type="text" id="wake-phrase-input" class="phrase-input" placeholder="e.g. Help Me, Bachao, SOS"
+                maxlength="40" />
+              <button class="btn-save-phrase" id="save-phrase-btn">Save</button>
+            </div>
+            <p class="phrase-hint">Use 2–4 words. Avoid common words like "stop" or "turn".</p>
+          </div>
+
+          <!-- Test button -->
+          <button class="btn-test-phrase" id="test-phrase-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+            </svg>
+            Test Phrase (5 sec)
+          </button>
+          <div class="test-result hidden" id="test-result"></div>
+        </div>
+
+        <!-- TAB: Settings -->
+        <div class="voice-tab-content hidden" id="tab-settings">
+          <div class="voice-settings">
+            <label class="toggle-setting">
+              <span>Enable Voice SOS</span>
+              <div class="toggle" id="voice-toggle">
+                <div class="toggle-thumb"></div>
+              </div>
+            </label>
+            <label class="toggle-setting">
+              <span>Active during navigation only</span>
+              <div class="toggle active" id="nav-only-toggle">
+                <div class="toggle-thumb"></div>
+              </div>
+            </label>
+
+            <div class="sensitivity-group">
+              <label class="sensitivity-label" for="voice-sensitivity">Detection Sensitivity</label>
+              <select id="voice-sensitivity" class="sensitivity-select">
+                <option value="low">Low — Exact match only</option>
+                <option value="medium" selected>Medium — Phrase anywhere in speech</option>
+                <option value="high">High — Fuzzy (≥70% words matched)</option>
+              </select>
+              <p class="phrase-hint">Higher = more triggers. Lower = fewer false alarms.</p>
+            </div>
+          </div>
+
+          <div class="voice-note">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+            <p>Voice matching uses your browser's built-in speech engine. <strong>Sathi never receives your
+                audio.</strong> The mic remains active continuously to ensure your maximum safety.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ── SAFETY REPORT MODAL ───────────────────────────── -->
+    <div class="modal-overlay hidden" id="report-modal-overlay">
+      <div class="modal report-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">Area Safety Report</h2>
+          <button class="icon-btn" id="close-report-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div class="report-area-selector">
+          <select class="form-select" id="report-area">
+            <option>MG Road, Bengaluru</option>
+            <option>Koramangala</option>
+            <option>Indiranagar</option>
+            <option>Whitefield</option>
+          </select>
+        </div>
+        <div class="report-scores">
+          <div class="report-score-card safety">
+            <div class="rs-label">Safety</div>
+            <div class="rs-value">8.4</div>
+            <div class="rs-bar">
+              <div class="rs-fill" style="width:84%"></div>
+            </div>
+            <div class="rs-meta">Based on 247 reviews</div>
+          </div>
+          <div class="report-score-card lighting">
+            <div class="rs-label">Lighting</div>
+            <div class="rs-value">7.1</div>
+            <div class="rs-bar">
+              <div class="rs-fill" style="width:71%"></div>
+            </div>
+            <div class="rs-meta">Based on 199 reviews</div>
+          </div>
+          <div class="report-score-card crowd">
+            <div class="rs-label">Crowd</div>
+            <div class="rs-value">6.8</div>
+            <div class="rs-bar">
+              <div class="rs-fill" style="width:68%"></div>
+            </div>
+            <div class="rs-meta">Based on 211 reviews</div>
+          </div>
+          <div class="report-score-card police">
+            <div class="rs-label">Police Stations</div>
+            <div class="rs-value">3</div>
+            <div class="rs-bar">
+              <div class="rs-fill" style="width:60%"></div>
+            </div>
+            <div class="rs-meta">Within 500m radius</div>
+          </div>
+        </div>
+        <div class="report-chart">
+          <h3 class="chart-title">Safety by Time of Day</h3>
+          <div class="time-chart" id="time-chart">
+            <!-- Generated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TOAST NOTIFICATIONS ────────────────────────────── -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ── BOTTOM NAV ─────────────────────────────────────── -->
+    <nav class="bottom-nav" id="bottom-nav">
+      <button class="bottom-nav-btn active" data-view="map">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="3 11 22 2 13 21 11 13 3 11" />
+        </svg>
+        <span>Navigate</span>
+      </button>
+      <button class="bottom-nav-btn" data-view="report" id="report-nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" />
+          <rect x="14" y="3" width="7" height="7" />
+          <rect x="14" y="14" width="7" height="7" />
+          <rect x="3" y="14" width="7" height="7" />
+        </svg>
+        <span>Safety Map</span>
+      </button>
+      <button class="bottom-nav-btn" data-view="buddy" id="buddy-nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+        </svg>
+        <span>Buddy</span>
+      </button>
+      <button class="bottom-nav-btn" data-view="profile" id="profile-nav-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="8" r="4" />
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+        </svg>
+        <span>Profile</span>
+      </button>
+    </nav>
+
+  </div><!-- /app -->
+
+  <!-- Google Maps JavaScript API (Places + Directions) -->
+  <script>
+    // Expose the API key for use in app.js
+    window.GOOGLE_MAPS_API_KEY = 'AIzaSyAkds1mAskgEOoItHhpFKRqCp2eGBRHBKI';
+  </script>
+  <script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAkds1mAskgEOoItHhpFKRqCp2eGBRHBKI&libraries=places,geometry&callback=onGoogleMapsReady"
+    async defer>
+    </script>
+  <script src="js/api.js"></script>
+  <script src="js/maps.js"></script>
+  <script src="js/voicesos.js"></script>
+  <script src="js/app.js"></script>
 </body>
+
 </html>

@@ -119,26 +119,30 @@ app.use((err, req, res, _next) => {
   });
 });
 
-// ─── Startup ─────────────────────────────────────────────────────────
+// ─── Startup ────────────────────────────────────────────────────────────
 async function start() {
+  // Try DB — non-fatal (Twilio SOS works without DB)
   try {
-    // Test DB connection
     await db.connect();
     console.log('✅ PostgreSQL connected');
+  } catch (err) {
+    console.warn('⚠️  PostgreSQL unavailable — running without DB:', err.message);
+  }
 
-    // Connect Redis
+  // Try Redis — non-fatal
+  try {
     await redisClient.connect();
     console.log('✅ Redis connected');
-
-    const PORT = process.env.PORT || 3001;
-    server.listen(PORT, () => {
-      console.log(`🚀 Sathi API server running on http://localhost:${PORT}`);
-      console.log(`🔌 WebSocket server running on ws://localhost:${PORT}/ws/track`);
-    });
   } catch (err) {
-    console.error('❌ Startup failed:', err);
-    process.exit(1);
+    console.warn('⚠️  Redis unavailable — running without cache:', err.message);
   }
+
+  const PORT = process.env.PORT || 3001;
+  server.listen(PORT, () => {
+    console.log(`🚀 Sathi API server running on http://localhost:${PORT}`);
+    console.log(`🖌️  WebSocket server running on ws://localhost:${PORT}/ws/track`);
+    console.log(`📦 Twilio SOS endpoint: POST http://localhost:${PORT}/api/sos/send-direct`);
+  });
 }
 
 start();

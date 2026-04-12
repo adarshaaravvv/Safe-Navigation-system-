@@ -95,6 +95,18 @@ async function triggerSOSAlert({ lat, lng, trigger = 'manual', routeId = null })
 }
 
 /**
+ * Trigger SOS alert directly — no auth required.
+ * Accepts contacts from the frontend and fires Twilio SMS immediately.
+ * @param {object} params { lat, lng, trigger, contacts, userName, routeDesc }
+ */
+async function sendDirectSOS({ lat, lng, trigger = 'manual', contacts, userName = '', routeDesc = '' }) {
+  return apiFetch('/api/sos/send-direct', {
+    method: 'POST',
+    body:   { lat, lng, trigger, contacts, userName, routeDesc },
+  });
+}
+
+/**
  * Fetch police stations near a GPS coordinate.
  * @param {number} lat @param {number} lng @param {number} radius metres
  */
@@ -138,6 +150,7 @@ window.SathiAPI = {
   submitReview,
   submitReviewBatch,
   triggerSOSAlert,
+  sendDirectSOS,
   fetchNearbyPolice,
   fetchOfflineBundle,
   registerUser,

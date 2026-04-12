@@ -526,6 +526,11 @@ function startNavigation(routeIndex) {
   } else {
     updateBuddyUI(false);
   }
+
+  // Start Voice SOS if enabled
+  if (window.VoiceSOS && window.VoiceSOS.isEnabled) {
+    window.VoiceSOS.enable();
+  }
   toast(`Navigating via ${route.name || route.summary || 'selected route'}`, 'success', '🧭');
 }
 
@@ -544,6 +549,9 @@ function endNavigation() {
       navMapState.map.setZoom(15);
     }
   }
+
+  // Stop Voice SOS
+  if (window.VoiceSOS) window.VoiceSOS.disable();
 
   // Clear the inputs and UI
   $id('dest-input').value = '';
@@ -725,6 +733,21 @@ function openSOSModal() {
   showModal('sos-modal-overlay');
   $id('sos-countdown').classList.add('hidden');
   $id('sos-action-btns').classList.remove('hidden');
+
+  // Populate contact preview from saved contacts
+  const preview = $id('sos-contacts-preview');
+  if (preview) {
+    const contacts = getEmergencyContacts();
+    if (contacts.length === 0) {
+      preview.innerHTML = '<p style="font-size:0.82rem;color:var(--text-secondary);text-align:center;padding:0.5rem;">⚠️ No contacts saved yet. Add contacts first.</p>';
+    } else {
+      preview.innerHTML = contacts.map(c => `
+        <div class="contact-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+          ${c.name} (${c.phone})
+        </div>`).join('');
+    }
+  }
 }
 
 function confirmSOS() {
@@ -757,39 +780,100 @@ function confirmSOS() {
   state.pendingCountdown = interval;
 }
 
+// ─── CONTACTS PERSISTENCE ────────────────────────────────────────────────
+const CONTACTS_KEY = 'sathi_emergency_contacts';
+
+function getSavedContacts() {
+  try { return JSON.parse(localStorage.getItem(CONTACTS_KEY) || '[]'); }
+  catch (_) { return []; }
+}
+
+function saveContactsToStorage() {
+  const cards = $qsa('#contacts-list .contact-card');
+  const contacts = Array.from(cards).map(card => ({
+    name:  card.querySelector('.contact-name')?.textContent?.trim() || '',
+    phone: card.querySelector('.contact-phone')?.textContent?.trim() || '',
+  })).filter(c => c.phone);
+  localStorage.setItem(CONTACTS_KEY, JSON.stringify(contacts));
+  return contacts;
+}
+
+function getEmergencyContacts() {
+  const cards = $qsa('#contacts-list .contact-card');
+  if (cards && cards.length > 0) return saveContactsToStorage();
+  return getSavedContacts();
+}
+
+function restoreContactsFromStorage() {
+  const contacts = getSavedContacts();
+  const list = $id('contacts-list');
+  if (!list || contacts.length === 0) return;
+  contacts.forEach(({ name, phone }) => {
+    const initial = (name[0] || '?').toUpperCase();
+    const card = document.createElement('div');
+    card.className = 'contact-card';
+    card.innerHTML = `
+      <div class="contact-avatar">${initial}</div>
+      <div class="contact-info">
+        <span class="contact-name">${name}</span>
+        <span class="contact-phone">${phone}</span>
+      </div>
+      <button class="icon-btn danger-subtle" onclick="this.closest('.contact-card').remove(); saveContactsToStorage();">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
+      </button>
+    `;
+    list.appendChild(card);
+  });
+}
+
 function triggerSOS(trigger = 'manual') {
   hideModal('sos-modal-overlay');
   hideModal('okay-modal-overlay');
 
-  toast('🆘 SOS Alert Sent! Emergency contacts notified.', 'danger', '🚨');
-  toast('Amma & Nanna have been notified with your live location', 'danger', '📍');
+  const contacts = getEmergencyContacts();
 
-  // Call real backend — gets GPS from browser, sends SMS+email
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        try {
-          const result = await window.SathiAPI?.triggerSOSAlert({
-            lat: pos.coords.latitude,
-            lng: pos.coords.longitude,
-            trigger,
-            routeId: state.routes[state.selectedRouteIndex]?.id || null,
-          });
-          if (result?.notifiedCount) {
-            toast(`✅ ${result.notifiedCount} contact(s) notified via SMS & email`, 'success', '📨');
-          }
-        } catch (err) {
-          console.warn('SOS backend call failed (contacts may still be notified via WS):', err.message);
-        }
-      },
-      () => {
-        // GPS denied — still send without location
-        window.SathiAPI?.triggerSOSAlert({ lat: 0, lng: 0, trigger }).catch(() => { });
-      }
-    );
+  if (contacts.length === 0) {
+    toast('⚠️ No emergency contacts! Open Travel Buddy > Contacts and add at least one.', 'warn', '👤');
+    return;
   }
 
-  // Visual feedback on nav strip
+  toast('🚨 SOS Alert sending… Notifying your emergency contacts!', 'danger', '🚨');
+
+  const route = state.routes[state.selectedRouteIndex];
+  const routeDesc = route?.name || route?.summary || '';
+  const names = contacts.map(c => c.name).filter(Boolean).join(' & ');
+
+  const doSend = async (lat, lng) => {
+    try {
+      const result = await window.SathiAPI?.sendDirectSOS({
+        lat, lng, trigger, contacts, routeDesc,
+        userName: names || 'Sathi User',
+      });
+      if (result?.notifiedCount > 0) {
+        toast(`✅ SMS sent to ${result.notifiedCount} contact(s)`, 'success', '📨');
+        result.results?.forEach(r => {
+          const label = r.status === 'sent' ? '✅ Notified' : '❌ Failed';
+          toast(`📱 ${r.name || r.phone} — ${label}`, r.status === 'sent' ? 'success' : 'warn', r.status === 'sent' ? '📱' : '⚠️');
+        });
+      } else {
+        toast('⚠️ SMS delivery failed. Check Twilio dashboard.', 'warn', '⚠️');
+      }
+    } catch (err) {
+      console.error('[SOS]', err.message);
+      toast('⚠️ Backend offline. Run: cd backend && npm run dev', 'warn', '📡');
+    }
+  };
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => doSend(pos.coords.latitude, pos.coords.longitude),
+      ()  => doSend(0, 0),
+      { timeout: 6000 }
+    );
+  } else {
+    doSend(0, 0);
+  }
+
   if (state.isNavigating) {
     $id('ind-safety').style.color = 'var(--danger-red)';
     $id('ind-safety').style.borderColor = 'var(--danger-red)';
@@ -984,14 +1068,26 @@ function applyFilter(filter) {
 
 // ─── VOICE SOS TOGGLE ────────────────────────────────────────────────
 function toggleVoiceSos(toggle, enable) {
-  toggle.classList.toggle('active', enable);
-  state.voiceSosEnabled = enable;
-
-  if (enable) {
-    toast('Voice SOS enabled — say "Help Me" anytime during navigation', 'info', '🎤');
-    // In production: initialize Web Speech API recognition
+  if (window.VoiceSOS) {
+    if (enable) {
+      window.VoiceSOS.enable();
+      toast('Voice SOS enabled — say your wake phrase anytime', 'success', '🎤');
+    } else {
+      window.VoiceSOS.disable();
+      toast('Voice SOS disabled', 'warn', '🎤');
+    }
+  } else {
+    toggle.classList.toggle('active', enable);
+    state.voiceSosEnabled = enable;
+    if (enable) toast('Voice SOS enabled', 'info', '🎤');
   }
 }
+
+// Called by VoiceSOS engine when wake phrase is detected
+window.triggerVoiceSOS = function(detectedText) {
+  toast(`🎤 Wake phrase detected: "${detectedText}" — Triggering SOS!`, 'danger', '🚨');
+  if (typeof triggerSOS === 'function') triggerSOS('voice_sos');
+};
 
 // ─── SWAP INPUT VALUES ────────────────────────────────────────────────
 function swapInputs() {
@@ -1055,6 +1151,7 @@ function addContact() {
   $id('new-contact-name').value = '';
   $id('new-contact-phone').value = '';
 
+  saveContactsToStorage();
   toast(`${name} added as emergency contact ✅`, 'success', '👤');
 }
 
@@ -1274,14 +1371,63 @@ function initEventListeners() {
   $id('search-buddy-toggle')?.addEventListener('click', handleBuddyToggle);
   $id('nav-buddy-toggle')?.addEventListener('click', handleBuddyToggle);
 
-  // Voice toggles
-  $id('voice-toggle').addEventListener('click', function () {
+  // Voice toggles — both modal toggle and in-nav toggle share the same handler
+  const handleVoiceToggle = function () {
     const isActive = this.classList.contains('active');
     toggleVoiceSos(this, !isActive);
+  };
+  $id('voice-toggle')?.addEventListener('click', handleVoiceToggle);
+  $id('nav-voice-toggle')?.addEventListener('click', handleVoiceToggle);
+
+  $id('nav-only-toggle')?.addEventListener('click', function () {
+    const val = !this.classList.contains('active');
+    this.classList.toggle('active', val);
+    if (window.VoiceSOS) window.VoiceSOS.setNavOnly(val);
   });
 
-  $id('nav-only-toggle').addEventListener('click', function () {
-    this.classList.toggle('active');
+  // Voice sensitivity
+  $id('voice-sensitivity')?.addEventListener('change', function () {
+    if (window.VoiceSOS) window.VoiceSOS.setSensitivity(this.value);
+  });
+
+  // Save custom wake phrase
+  $id('save-phrase-btn')?.addEventListener('click', () => {
+    const input = $id('wake-phrase-input');
+    const phrase = input?.value?.trim();
+    if (!phrase) { toast('Please type a wake phrase first', 'warn', '🎤'); return; }
+    if (window.VoiceSOS && window.VoiceSOS.setPhrase(phrase)) {
+      toast(`Wake phrase saved: "${phrase}"`, 'success', '✅');
+    }
+  });
+
+  // Test wake phrase
+  $id('test-phrase-btn')?.addEventListener('click', () => {
+    const btn = $id('test-phrase-btn');
+    const result = $id('test-result');
+    if (!window.VoiceSOS) return;
+    if (!window.VoiceSOS.isSupported) { toast('Voice SOS not supported in this browser', 'warn', '⚠️'); return; }
+    btn.disabled = true;
+    btn.textContent = '⏳ Listening…';
+    result.classList.add('hidden');
+    window.VoiceSOS.testPhrase(({ matched, heard, error }) => {
+      btn.disabled = false;
+      btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg> Test Phrase (5 sec)';
+      result.classList.remove('hidden');
+      if (error === 'no-speech') { result.className = 'test-result warn'; result.textContent = '🤔 Nothing heard. Speak louder.'; }
+      else if (error) { result.className = 'test-result warn'; result.textContent = `⚠️ Error: ${error}`; }
+      else if (matched) { result.className = 'test-result success'; result.textContent = `✅ Detected! Heard: "${heard}"`; }
+      else { result.className = 'test-result fail'; result.textContent = `❌ Not matched. Heard: "${heard || 'nothing'}"`; }
+    });
+  });
+
+  // Voice modal tab switching
+  $qsa('.voice-tab')?.forEach(tab => {
+    tab.addEventListener('click', () => {
+      $qsa('.voice-tab').forEach(t => t.classList.remove('active'));
+      $qsa('.voice-tab-content').forEach(c => c.classList.add('hidden'));
+      tab.classList.add('active');
+      $id(`tab-${tab.dataset.tab}`)?.classList.remove('hidden');
+    });
   });
 
   // Bottom nav
@@ -1373,6 +1519,30 @@ function init() {
       { timeout: 3000 }
     );
   }
+
+  // Init Voice SOS engine
+  if (window.VoiceSOS) {
+    window.VoiceSOS.init();
+    if (!window.VoiceSOS.isSupported) {
+      const banner = $id('voice-unsupported-banner');
+      if (banner) banner.classList.remove('hidden');
+    }
+  }
+
+  // One-time cleanup: remove any old fake/placeholder contacts from localStorage
+  (function() {
+    try {
+      const stored = JSON.parse(localStorage.getItem('sathi_emergency_contacts') || '[]');
+      const fakePhones = ['+91 99810 XXXXX', '+91 98760 XXXXX'];
+      const cleaned = stored.filter(c => !fakePhones.includes(c.phone));
+      if (cleaned.length !== stored.length) {
+        localStorage.setItem('sathi_emergency_contacts', JSON.stringify(cleaned));
+      }
+    } catch(_) {}
+  })();
+
+  // Restore saved emergency contacts from localStorage
+  restoreContactsFromStorage();
 
   // Check backend connection — shows status toast
   setTimeout(async () => {

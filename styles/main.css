@@ -703,7 +703,11 @@ body.night-mode .night-overlay { opacity: 1; }
   flex-direction: column;
 }
 
-.routes-panel.open { max-height: calc(100dvh - 330px); }
+/* Panel must NOT extend behind the search panel.
+   Search panel height is ~300px on mobile; limit the open panel to 55% of the viewport. */
+.routes-panel.open {
+  max-height: 60vh;
+}
 
 .panel-handle {
   width: 40px;
@@ -735,12 +739,15 @@ body.night-mode .night-overlay { opacity: 1; }
 }
 
 .routes-list {
-  padding: 0.5rem 1rem 0.5rem;
+  padding: 0.5rem 1rem;
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
-  max-height: calc(100dvh - 410px);
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--border-medium) transparent;
 }
@@ -755,7 +762,7 @@ body.night-mode .night-overlay { opacity: 1; }
   transition: all var(--t-base);
   animation: cardFadeIn 0.4s both;
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .route-card::before {
@@ -765,18 +772,27 @@ body.night-mode .night-overlay { opacity: 1; }
   left: 0;
   right: 0;
   height: 2px;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   opacity: 0;
   transition: opacity var(--t-base);
 }
 
-.route-card.card-safe::before   { background: var(--grad-safe); }
-.route-card.card-medium::before { background: linear-gradient(90deg, var(--warn-yellow), #f97316); }
-.route-card.card-fast::before   { background: linear-gradient(90deg, var(--brand-secondary), var(--brand-primary)); }
+
+
 
 .route-card:hover, .route-card.selected {
   border-color: var(--brand-primary);
   transform: translateX(3px);
-  box-shadow: 0 4px 20px rgba(108, 58, 232, 0.2);
+  box-shadow: 0 0 12px rgba(108, 58, 232, 0.35), 0 0 24px rgba(108, 58, 232, 0.15);
+}
+
+.route-card.selected {
+  animation: selectedGlow 2s ease-in-out infinite;
+}
+
+@keyframes selectedGlow {
+  0%, 100% { box-shadow: 0 0 12px rgba(108, 58, 232, 0.35), 0 0 24px rgba(108, 58, 232, 0.15); }
+  50%      { box-shadow: 0 0 18px rgba(108, 58, 232, 0.5), 0 0 36px rgba(108, 58, 232, 0.25); }
 }
 
 .route-card:hover::before, .route-card.selected::before { opacity: 1; }

@@ -22,6 +22,8 @@ const state = {
   isNavigating: false,
   buddyActive: false,
   travelBuddyEnabled: true,
+  buddyAutoSosEnabled: true,
+  buddyLocationEnabled: true,
   buddyStartTime: null,
   buddyTimerInterval: null,
   stopTimeout: null,
@@ -272,7 +274,7 @@ function renderRouteCards(routes) {
 
     const typeClass = `card-${route.type}`;
     const badgeClass = route.type === 'safe' ? 'badge-safe' : route.type === 'medium' ? 'badge-medium' : 'badge-fast';
-    const badgeLabel = route.type === 'safe' ? '🛡️ Safest' : route.type === 'medium' ? '⚖️ Balanced' : '⚡ Fastest';
+    const badgeLabel = `📍 Route ${i + 1}`;
 
     const nightSafeTag = state.mode === 'night' && route.scores.isNightSafe
       ? `<span class="night-safe-tag">🌙 Night Safe</span>` : '';
@@ -320,13 +322,11 @@ function renderRouteCards(routes) {
           <div class="score-bar"><div class="score-fill ${cc.fill}" style="width:${scores.crowd * 10}%"></div></div>
         </div>
 
-        <div class="score-item">
-          <span class="score-label">Score</span>
-          <div class="score-value-wrap">
-            <span class="score-value blue-text">${scores.finalScore}</span>
-            <span class="score-max">/10</span>
+        <div class="score-item" style="background: rgba(37, 99, 235, 0.08); border: 1px solid rgba(37, 99, 235, 0.4); border-radius: 8px; padding: 0.3rem; justify-content: center; align-items: center; gap: 0; position: relative;">
+          <span class="score-label" style="color: rgba(37, 99, 235, 0.8); font-weight: 700;">SCORE</span>
+          <div class="score-value-wrap" style="transform: translateY(-1px);">
+            <span class="score-value blue-text" style="font-size: 1.35rem;">${scores.finalScore}</span>
           </div>
-          <div class="score-bar"><div class="score-fill fill-blue" style="width:${scores.finalScore * 10}%"></div></div>
         </div>
       </div>
 
@@ -340,14 +340,12 @@ function renderRouteCards(routes) {
         ${route.type === 'safe' ? '<span style="font-size:0.75rem;color:var(--safe-green)">✓ Recommended</span>' : ''}
       </div>
 
-      <button class="start-nav-btn" data-route-index="${i}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="3 11 22 2 13 21 11 13 3 11"/></svg>
-        Start Navigation
-      </button>
     `;
 
     list.appendChild(card);
   });
+
+  // scrollTop is reset when the panel opens (see openRoutesPanel)
 
   // Animate route SVG paths
   animateRoutePaths(routes);
@@ -447,6 +445,13 @@ async function triggerRouteSearch(destName, destLocation) {
 function openRoutesPanel() {
   window._sathi_selectedIdx = state.selectedRouteIndex || 0;
   $id('routes-panel').classList.add('open');
+  // After the panel slides in, snap the list to Route 1
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      const list = $id('routes-list');
+      if (list) list.scrollTop = 0;
+    });
+  });
 }
 
 function closeRoutesPanel() {
@@ -528,8 +533,9 @@ function startNavigation(routeIndex) {
   }
 
   // Start Voice SOS if enabled
-  if (window.VoiceSOS && window.VoiceSOS.isEnabled) {
+  if (window.VoiceSOS && state.voiceSosEnabled) {
     window.VoiceSOS.enable();
+    toast('Voice SOS engine listening', 'info', '🎤');
   }
   toast(`Navigating via ${route.name || route.summary || 'selected route'}`, 'success', '🧭');
 }
@@ -615,7 +621,10 @@ function updateBuddyUI(isActive) {
   if (isActive) {
     if (label) label.textContent = 'Travel Buddy Active';
     if (status) status.innerHTML = `Monitoring your journey · <span id="buddy-time">0:00</span>`;
-    $id('ind-location').classList.add('active');
+    const indLoc = $id('ind-location');
+    indLoc.classList.add('active');
+    indLoc.style.opacity = state.buddyLocationEnabled ? '1' : '0.3';
+    indLoc.style.color = state.buddyLocationEnabled ? 'var(--brand-primary)' : 'var(--text-secondary)';
     $id('ind-safety').classList.add('safe');
   } else {
     if (label) label.textContent = 'Travel Buddy Off';
@@ -671,7 +680,7 @@ function stopTravelBuddy() {
 
 function scheduleStopDetection(delayMs = STOP_DETECTION_MS) {
   state.stopTimeout = setTimeout(async () => {
-    if (state.isNavigating && state.buddyActive) {
+    if (state.isNavigating && state.buddyActive && state.buddyAutoSosEnabled) {
       if (window.SathiMaps?.checkTrafficJam) {
         const isJam = await window.SathiMaps.checkTrafficJam();
         if (isJam) {
@@ -1068,7 +1077,15 @@ function applyFilter(filter) {
 
 // ─── VOICE SOS TOGGLE ────────────────────────────────────────────────
 function toggleVoiceSos(toggle, enable) {
-  if (window.VoiceSOS) {
+  state.voiceSosEnabled = enable;
+  
+  // Sync all voice SOS toggles visually
+  const sidebarToggle = document.getElementById('sidebar-voice-sos-toggle');
+  const buddyToggle = document.getElementById('modal-buddy-voice-toggle');
+  if (sidebarToggle) sidebarToggle.classList.toggle('active', enable);
+  if (buddyToggle) buddyToggle.classList.toggle('active', enable);
+
+  if (window.VoiceSOS && state.isNavigating) {
     if (enable) {
       window.VoiceSOS.enable();
       toast('Voice SOS enabled — say your wake phrase anytime', 'success', '🎤');
@@ -1077,9 +1094,8 @@ function toggleVoiceSos(toggle, enable) {
       toast('Voice SOS disabled', 'warn', '🎤');
     }
   } else {
-    toggle.classList.toggle('active', enable);
-    state.voiceSosEnabled = enable;
-    if (enable) toast('Voice SOS enabled', 'info', '🎤');
+    if (enable) toast('Voice SOS enabled for next trip', 'info', '🎤');
+    else toast('Voice SOS disabled', 'info', '🎤');
   }
 }
 
@@ -1313,6 +1329,17 @@ function initEventListeners() {
   $id('close-sidebar-btn').addEventListener('click', closeSidebar);
   $id('sidebar-overlay').addEventListener('click', closeSidebar);
 
+  // Logout functionality
+  const logoutBtn = $id('logout-btn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      localStorage.removeItem('sathiAuthToken');
+      localStorage.removeItem('sathiUserEmail');
+      window.location.replace('login.html');
+    });
+  }
+
   // Sidebar links → modals
   $id('open-emergency').addEventListener('click', e => {
     e.preventDefault();
@@ -1354,6 +1381,13 @@ function initEventListeners() {
 
   // Add contact
   $id('add-contact-btn').addEventListener('click', addContact);
+
+  // Filter Chips
+  $qsa('#filter-chips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      applyFilter(chip.dataset.filter);
+    });
+  });
 
   // Offline downloads
   $qsa('.download-btn').forEach(btn => {
@@ -1430,22 +1464,78 @@ function initEventListeners() {
     });
   });
 
+  // Buddy Settings Modal
+  $id('close-buddy-modal-btn')?.addEventListener('click', () => hideModal('buddy-modal-overlay'));
+
+  $id('modal-buddy-master-toggle')?.addEventListener('click', function() {
+    const enable = !this.classList.contains('active');
+    this.classList.toggle('active', enable);
+    
+    // Sync with other buddy toggles
+    $id('search-buddy-toggle')?.classList.toggle('active', enable);
+    $id('nav-buddy-toggle')?.classList.toggle('active', enable);
+    
+    state.travelBuddyEnabled = enable;
+    if (state.isNavigating) {
+      if (enable && !state.buddyActive) startTravelBuddy();
+      else if (!enable && state.buddyActive) stopTravelBuddy();
+    }
+    
+    const sub = $id('buddy-sub-features');
+    if (sub) {
+      sub.style.opacity = enable ? '1' : '0.5';
+      sub.style.pointerEvents = enable ? 'auto' : 'none';
+    }
+  });
+
+  $id('modal-buddy-autosos-toggle')?.addEventListener('click', function() {
+    const enable = !this.classList.contains('active');
+    this.classList.toggle('active', enable);
+    state.buddyAutoSosEnabled = enable;
+  });
+
+  $id('modal-buddy-location-toggle')?.addEventListener('click', function() {
+    const enable = !this.classList.contains('active');
+    this.classList.toggle('active', enable);
+    state.buddyLocationEnabled = enable;
+    if (state.isNavigating) {
+      const ind = $id('ind-location');
+      if (ind) {
+         ind.style.opacity = enable ? '1' : '0.3';
+         ind.style.color = enable ? 'var(--brand-primary)' : 'var(--text-secondary)';
+      }
+    }
+  });
+
+  $id('modal-buddy-voice-toggle')?.addEventListener('click', function() {
+     const enable = !this.classList.contains('active');
+     if (typeof toggleVoiceSos === 'function') toggleVoiceSos(this, enable);
+  });
+
   // Bottom nav
   $qsa('.bottom-nav-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       $qsa('.bottom-nav-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
 
-      if (btn.dataset.view === 'report') {
-        renderTimeChart();
-        showModal('report-modal-overlay');
+      if (btn.dataset.view === 'contacts') {
+        showModal('contacts-modal-overlay');
       }
       if (btn.dataset.view === 'buddy') {
-        if (state.isNavigating) {
-          toast('Travel Buddy is monitoring your journey', 'info', '🧍');
-        } else {
-          toast('Start a navigation to activate Travel Buddy', 'info', '🧍');
+        // Sync toggles visually before showing
+        const vToggle = document.getElementById('modal-buddy-voice-toggle');
+        if (vToggle) vToggle.classList.toggle('active', state.voiceSosEnabled);
+        
+        const mToggle = document.getElementById('modal-buddy-master-toggle');
+        if (mToggle) mToggle.classList.toggle('active', state.travelBuddyEnabled);
+        
+        const subFeatures = document.getElementById('buddy-sub-features');
+        if (subFeatures) {
+          subFeatures.style.opacity = state.travelBuddyEnabled ? '1' : '0.5';
+          subFeatures.style.pointerEvents = state.travelBuddyEnabled ? 'auto' : 'none';
         }
+        
+        showModal('buddy-modal-overlay');
       }
     });
   });

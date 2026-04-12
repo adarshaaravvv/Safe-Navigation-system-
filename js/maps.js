@@ -16,6 +16,9 @@ const mapsState = {
   userMarker:       null,
   directionsService: null,
   renderers:        [],        // one DirectionsRenderer per route
+  heading:          0,         // current device compass heading (degrees)
+  _prevLocation:    null,      // previous GPS position for heading calc
+  _compassListener: null,      // DeviceOrientationEvent handler ref
   routeMarkers:     [],        // Start/End pins
   currentLocation:  null,      // { lat, lng }
   destLocation:     null,      // { lat, lng }
@@ -349,15 +352,63 @@ async function scoreRoutesViaBackend(builtRoutes, mode) {
  * Highlight a selected route (make others dimmer).
  */
 function highlightRoute(selectedIndex) {
+  // Remove any previous glow polyline
+  if (mapsState._glowLine) {
+    mapsState._glowLine.setMap(null);
+    mapsState._glowLine = null;
+  }
+  if (mapsState._glowAnim) {
+    cancelAnimationFrame(mapsState._glowAnim);
+    mapsState._glowAnim = null;
+  }
+
+  const routeColors = ['#22c55e', '#f59e0b', '#6c3ae8'];
+
   mapsState.renderers.forEach((renderer, i) => {
+    const isSelected = i === selectedIndex;
     renderer.setOptions({
       polylineOptions: {
-        strokeWeight:  i === selectedIndex ? 7 : 3,
-        strokeOpacity: i === selectedIndex ? 1.0 : 0.3,
-        zIndex:        i === selectedIndex ? 20 : 5,
+        strokeColor:   routeColors[i] || '#8B91A8',
+        strokeWeight:  isSelected ? 7 : 3,
+        strokeOpacity: isSelected ? 1.0 : 0.25,
+        zIndex:        isSelected ? 20 : 5,
       },
     });
   });
+
+  // Draw a glow halo behind the selected route
+  const selectedRenderer = mapsState.renderers[selectedIndex];
+  if (selectedRenderer && mapsState.map) {
+    try {
+      const dirs = selectedRenderer.getDirections();
+      const path = dirs.routes[selectedIndex]?.overview_path;
+      if (path) {
+        const glowColor = routeColors[selectedIndex] || '#6c3ae8';
+        const glowLine = new google.maps.Polyline({
+          path,
+          strokeColor:   glowColor,
+          strokeOpacity: 0.3,
+          strokeWeight:  16,
+          zIndex:        19,
+          map:           mapsState.map,
+        });
+        mapsState._glowLine = glowLine;
+
+        // Pulse animation
+        let opacity = 0.3;
+        let rising = true;
+        function pulseGlow() {
+          if (!mapsState._glowLine) return;
+          opacity += rising ? 0.008 : -0.008;
+          if (opacity >= 0.5) rising = false;
+          if (opacity <= 0.15) rising = true;
+          glowLine.setOptions({ strokeOpacity: opacity });
+          mapsState._glowAnim = requestAnimationFrame(pulseGlow);
+        }
+        pulseGlow();
+      }
+    } catch (_) { /* ignore if directions not available */ }
+  }
 }
 
 /**
@@ -383,6 +434,16 @@ function hideAlternativeRoutes(selectedIndex) {
  * Clear all rendered route polylines from the map.
  */
 function clearRouteRenderers() {
+  // Clean up glow effect
+  if (mapsState._glowLine) {
+    mapsState._glowLine.setMap(null);
+    mapsState._glowLine = null;
+  }
+  if (mapsState._glowAnim) {
+    cancelAnimationFrame(mapsState._glowAnim);
+    mapsState._glowAnim = null;
+  }
+
   mapsState.renderers.forEach(r => r.setMap(null));
   mapsState.renderers = [];
   
@@ -433,9 +494,33 @@ function addRouteMarkers(origin, dest) {
  * Move the user location marker during active navigation.
  */
 function updateUserPosition(lat, lng) {
-  if (!mapsState.userMarker || !mapsState.map) return;
+  if (!mapsState.map) return;
   const pos = new google.maps.LatLng(lat, lng);
-  mapsState.userMarker.setPosition(pos);
+
+  // Calculate heading from movement if compass not available
+  if (mapsState._prevLocation) {
+    const dLat = lat - mapsState._prevLocation.lat;
+    const dLng = lng - mapsState._prevLocation.lng;
+    if (Math.abs(dLat) > 0.00002 || Math.abs(dLng) > 0.00002) {
+      const movementHeading = (Math.atan2(dLng, dLat) * 180 / Math.PI + 360) % 360;
+      // Only use movement heading if no compass data
+      if (!mapsState._hasCompass) {
+        mapsState.heading = movementHeading;
+      }
+    }
+  }
+  mapsState._prevLocation = { lat, lng };
+
+  // Update or create directional arrow marker
+  if (mapsState.userMarker) {
+    mapsState.userMarker.setPosition(pos);
+    const icon = mapsState.userMarker.getIcon();
+    if (icon) {
+      icon.rotation = mapsState.heading;
+      mapsState.userMarker.setIcon(icon);
+    }
+  }
+
   mapsState.map.panTo(pos);
 }
 
@@ -452,6 +537,64 @@ function startLiveTracking() {
     if (route) {
       activeRoutePolyline = new google.maps.Polyline({ path: route.overview_path });
     }
+  }
+
+  // Switch user marker to directional arrow
+  if (mapsState.userMarker) {
+    mapsState.userMarker.setIcon({
+      path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+      scale: 7,
+      fillColor:    '#6C3AE8',
+      fillOpacity:  1,
+      strokeColor:  '#A78BFA',
+      strokeWeight: 2,
+      rotation:     mapsState.heading,
+      anchor:       new google.maps.Point(0, 2.5),
+    });
+  }
+
+  // Start compass heading listener
+  mapsState._hasCompass = false;
+  const compassHandler = (e) => {
+    let heading = null;
+    if (typeof e.webkitCompassHeading === 'number') {
+      heading = e.webkitCompassHeading; // iOS
+    } else if (typeof e.alpha === 'number') {
+      heading = (360 - e.alpha) % 360;  // Android
+    }
+    if (heading !== null) {
+      mapsState._hasCompass = true;
+      mapsState.heading = heading;
+      // Live-rotate the arrow
+      if (mapsState.userMarker) {
+        const icon = mapsState.userMarker.getIcon();
+        if (icon) {
+          icon.rotation = heading;
+          mapsState.userMarker.setIcon(icon);
+        }
+      }
+    }
+  };
+  mapsState._compassListener = compassHandler;
+
+  // Request permission on iOS 13+
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission()
+      .then(state => {
+        if (state === 'granted') {
+          window.addEventListener('deviceorientation', compassHandler, true);
+        }
+      })
+      .catch(() => {});
+  } else if (typeof DeviceOrientationEvent !== 'undefined') {
+    window.addEventListener('deviceorientation', compassHandler, true);
+  }
+
+  // Tilt map for navigation perspective
+  if (mapsState.map) {
+    mapsState.map.setTilt(45);
+    mapsState.map.setZoom(17);
   }
 
   mapsState.geolocationWatch = navigator.geolocation.watchPosition(
@@ -471,6 +614,30 @@ function stopLiveTracking() {
     navigator.geolocation.clearWatch(mapsState.geolocationWatch);
     mapsState.geolocationWatch = null;
   }
+
+  // Remove compass listener
+  if (mapsState._compassListener) {
+    window.removeEventListener('deviceorientation', mapsState._compassListener, true);
+    mapsState._compassListener = null;
+  }
+
+  // Reset map tilt & restore user marker to circle
+  if (mapsState.map) {
+    mapsState.map.setTilt(0);
+  }
+  if (mapsState.userMarker) {
+    mapsState.userMarker.setIcon({
+      path:         google.maps.SymbolPath.CIRCLE,
+      scale:        10,
+      fillColor:    '#6C3AE8',
+      fillOpacity:  1,
+      strokeColor:  '#A78BFA',
+      strokeWeight: 3,
+    });
+  }
+
+  mapsState._prevLocation = null;
+  mapsState._hasCompass = false;
 }
 
 function checkDeviation(loc) {

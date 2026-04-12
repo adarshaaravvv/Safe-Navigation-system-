@@ -2,6 +2,11 @@
 <html lang="en">
 
 <head>
+  <script>
+    if (!localStorage.getItem('sathiAuthToken')) {
+      window.location.replace('login.html');
+    }
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
   <title>Sathi Navigation — Safe Routes, Safe You</title>
@@ -161,19 +166,6 @@
         <button class="chip" data-filter="safest">Safest</button>
         <button class="chip" data-filter="fastest">Fastest</button>
         <button class="chip" data-filter="lit">Well-Lit</button>
-      </div>
-      <div class="buddy-opt-in"
-        style="margin-top: 1rem; padding: 0.5rem 0.75rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-          <span style="font-size: 1.2rem;">🧍</span>
-          <div>
-            <div style="font-weight: 600; font-size: 0.9rem;">Travel Buddy</div>
-            <div style="font-size: 0.75rem; color: var(--text-secondary);">Monitor route & track safety</div>
-          </div>
-        </div>
-        <div class="toggle active" id="search-buddy-toggle" style="cursor: pointer;">
-          <div class="toggle-thumb"></div>
-        </div>
       </div>
     </div>
 
@@ -448,6 +440,15 @@
               opacity="0.3" />
           </svg>
           Settings
+        </a>
+        <div class="sidebar-divider" style="height: 1px; background: var(--border-medium); margin: 1rem 0;"></div>
+        <a href="#" class="sidebar-link text-danger" id="logout-btn" style="color: var(--danger-red);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+            <polyline points="16 17 21 12 16 7" />
+            <line x1="21" y1="12" x2="9" y2="12" />
+          </svg>
+          Log Out
         </a>
       </nav>
       <div class="sidebar-footer">
@@ -777,6 +778,73 @@
       </div>
     </div>
 
+    <!-- ── TRAVEL BUDDY SETTINGS MODAL ────────────────────────── -->
+    <div class="modal-overlay hidden" id="buddy-modal-overlay">
+      <div class="modal buddy-modal">
+        <div class="modal-header">
+          <h2 class="modal-title">🧍 Buddy Settings</h2>
+          <button class="icon-btn" id="close-buddy-modal-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <p class="modal-desc">Control which Travel Buddy safety features are active during your journey.</p>
+
+        <div class="voice-settings" style="margin-top: 1.5rem;">
+          <label class="toggle-setting"
+            style="border-bottom: 2px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1rem;">
+            <div>
+              <span style="font-weight: 700; color: var(--brand-primary);">Master Toggle</span>
+              <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.2rem;">Enable or disable all
+                Travel Buddy features</div>
+            </div>
+            <div class="toggle active" id="modal-buddy-master-toggle">
+              <div class="toggle-thumb"></div>
+            </div>
+          </label>
+
+          <!-- Individual Features -->
+          <div id="buddy-sub-features">
+            <label class="toggle-setting">
+              <div>
+                <span>Auto SOS (Stop & deviation Detection)</span>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">
+                  Detects route deviation & long unmapped stops</div>
+              </div>
+              <div class="toggle active" id="modal-buddy-autosos-toggle">
+                <div class="toggle-thumb"></div>
+              </div>
+            </label>
+
+            <label class="toggle-setting">
+              <div>
+                <span>Live Location Sharing</span>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">
+                  Continuously share your live GPS path to contacts</div>
+              </div>
+              <div class="toggle active" id="modal-buddy-location-toggle">
+                <div class="toggle-thumb"></div>
+              </div>
+            </label>
+
+            <label class="toggle-setting">
+              <div>
+                <span>Voice SOS</span>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); font-weight: normal; margin-top: 0.2rem;">
+                  Continuously listen for emergency wake word</div>
+              </div>
+              <div class="toggle" id="modal-buddy-voice-toggle">
+                <div class="toggle-thumb"></div>
+              </div>
+            </label>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
     <!-- ── TOAST NOTIFICATIONS ────────────────────────────── -->
     <div class="toast-container" id="toast-container"></div>
 
@@ -788,21 +856,18 @@
         </svg>
         <span>Navigate</span>
       </button>
-      <button class="bottom-nav-btn" data-view="report" id="report-nav-btn">
+      <button class="bottom-nav-btn" data-view="contacts" id="contacts-nav-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
+          <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z" />
         </svg>
-        <span>Safety Map</span>
+        <span>Contacts</span>
       </button>
       <button class="bottom-nav-btn" data-view="buddy" id="buddy-nav-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="12" cy="8" r="4" />
           <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
         </svg>
-        <span>Buddy</span>
+        <span>Travel Buddy</span>
       </button>
       <button class="bottom-nav-btn" data-view="profile" id="profile-nav-btn">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

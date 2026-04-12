@@ -134,6 +134,15 @@ async function registerUser({ firebaseUid, name, email, phone }) {
 }
 
 /**
+ * MOCK: Fetch user profile using email as the mock UID. 
+ * (Simulates a Firebase login flow lookup).
+ */
+async function loginUser(email) {
+  // For development, we use email as the mock firebaseUid
+  return apiFetch(`/api/auth/profile?uid=${encodeURIComponent(email)}`);
+}
+
+/**
  * Update emergency contacts list.
  */
 async function updateEmergencyContacts(uid, contacts) {
@@ -154,5 +163,6 @@ window.SathiAPI = {
   fetchNearbyPolice,
   fetchOfflineBundle,
   registerUser,
+  loginUser,
   updateEmergencyContacts,
 };

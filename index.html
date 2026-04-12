@@ -111,6 +111,9 @@
       <div class="search-input-group">
         <div class="search-dot dest-dot"></div>
         <input type="text" id="dest-input" class="search-input" placeholder="Where to?" autocomplete="off" />
+        <button id="use-dest-location-btn" class="icon-btn small" aria-label="Use current location" style="margin-left: -0.5rem;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/><circle cx="12" cy="12" r="7" stroke-opacity="0.3"/></svg>
+        </button>
         <button id="clear-dest-btn" class="icon-btn small hidden" aria-label="Clear destination">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
@@ -121,6 +124,18 @@
       <button class="chip" data-filter="safest">Safest</button>
       <button class="chip" data-filter="fastest">Fastest</button>
       <button class="chip" data-filter="lit">Well-Lit</button>
+    </div>
+    <div class="buddy-opt-in" style="margin-top: 1rem; padding: 0.5rem 0.75rem; background: var(--bg-card); border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 1.2rem;">🧍</span>
+        <div>
+          <div style="font-weight: 600; font-size: 0.9rem;">Travel Buddy</div>
+          <div style="font-size: 0.75rem; color: var(--text-secondary);">Monitor route & track safety</div>
+        </div>
+      </div>
+      <div class="toggle active" id="search-buddy-toggle" style="cursor: pointer;">
+        <div class="toggle-thumb"></div>
+      </div>
     </div>
   </div>
 
@@ -193,9 +208,15 @@
       </div>
       <div class="nav-eta">
         <span id="eta">14 min</span>
-        <button id="open-gmaps-btn" class="icon-btn small gmaps-link-btn" title="Open in Google Maps App" onclick="openInGoogleMaps()">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
-        </button>
+        <div style="display: flex; gap: 0.25rem;">
+          <button id="nav-theme-toggle" class="icon-btn small" title="Toggle Theme">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="sun-icon hidden"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="moon-icon"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          </button>
+          <button id="open-gmaps-btn" class="icon-btn small gmaps-link-btn" title="Open in Google Maps App" onclick="openInGoogleMaps()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+          </button>
+        </div>
       </div>
     </div>
 
@@ -205,15 +226,18 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
       </div>
       <div class="buddy-info">
-        <span class="buddy-label">Travel Buddy Active</span>
-        <span class="buddy-status">Monitoring your journey · <span id="buddy-time">0:00</span></span>
+        <span class="buddy-label" id="buddy-label">Travel Buddy Active</span>
+        <span class="buddy-status" id="buddy-status-text">Monitoring your journey · <span id="buddy-time">0:00</span></span>
       </div>
-      <div class="buddy-indicators">
+      <div class="buddy-indicators" style="display: flex; align-items: center; gap: 0.5rem;">
         <div class="indicator safe" id="ind-safety" title="Safety">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5z"/></svg>
         </div>
         <div class="indicator" id="ind-location" title="Location Shared">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/></svg>
+        </div>
+        <div class="toggle active" id="nav-buddy-toggle" style="cursor: pointer; transform: scale(0.85); transform-origin: right;">
+          <div class="toggle-thumb"></div>
         </div>
       </div>
     </div>
@@ -367,12 +391,15 @@
   <div class="modal-overlay hidden" id="okay-modal-overlay">
     <div class="modal okay-modal">
       <div class="okay-modal-icon">🛑</div>
-      <h2 class="modal-title">Are you okay?</h2>
-      <p class="modal-desc">You've been stationary for over 10 minutes. We want to make sure you're safe.</p>
+      <h2 class="modal-title" id="okay-modal-title">Are you okay?</h2>
+      <p class="modal-desc" id="okay-modal-desc">You've been stationary for over 1 minute. We want to make sure you're safe.</p>
+      <div id="okay-countdown-display" style="font-family: 'Outfit', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--danger-red); margin: 0.5rem 0;">Auto SOS in 60s...</div>
       <div class="modal-actions">
         <button class="btn btn-primary btn-lg" id="okay-yes-btn">✅ I'm Okay</button>
-        <button class="btn btn-outline" id="okay-timer-btn">⏱ Set Timer (5 min)</button>
-        <button class="btn btn-danger" id="okay-sos-btn">🆘 Send SOS</button>
+        <div style="display: flex; gap: 0.5rem;">
+          <input type="number" id="custom-timer-input" class="form-input" value="5" min="1" style="width: 80px; text-align: center;" aria-label="Wait minutes" />
+          <button class="btn btn-outline" id="okay-timer-btn" style="flex: 1;">⏱ Wait more (min)</button>
+        </div>
       </div>
     </div>
   </div>

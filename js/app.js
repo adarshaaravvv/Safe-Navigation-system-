@@ -10,7 +10,7 @@ const DECAY_LAMBDA = 0.023; // ln(2)/30 ≈ 30-day half life
 const ROUTE_SAFETY_THRESHOLD_NORMAL = 0;
 const ROUTE_SAFETY_THRESHOLD_NIGHT = 4.0;
 const ROUTE_LIGHTING_THRESHOLD_NIGHT = 3.0;
-const STOP_DETECTION_MS = 10 * 60 * 1000; // 10 minutes
+const STOP_DETECTION_MS = 1 * 60 * 1000; // 1 minute (for testing)
 const DEVIATION_THRESHOLD_M = 150;
 const REVIEW_BATCH_INTERVAL_MS = 60 * 1000;
 
@@ -21,6 +21,7 @@ const state = {
   selectedRouteIndex: 0,
   isNavigating: false,
   buddyActive: false,
+  travelBuddyEnabled: true,
   buddyStartTime: null,
   buddyTimerInterval: null,
   stopTimeout: null,
@@ -464,6 +465,13 @@ function setMode(mode) {
     btn.classList.toggle('active', btn.dataset.mode === mode);
   });
 
+  // Update nav theme toggle
+  const navThemeToggle = $id('nav-theme-toggle');
+  if (navThemeToggle) {
+    navThemeToggle.querySelector('.sun-icon').classList.toggle('hidden', mode === 'normal');
+    navThemeToggle.querySelector('.moon-icon').classList.toggle('hidden', mode === 'night');
+  }
+
   // Re-compute if routes are loaded
   if (state.routes.length > 0) {
     state.routes = computeAllRoutes(mode);
@@ -507,12 +515,17 @@ function startNavigation(routeIndex) {
   now.setMinutes(now.getMinutes() + parseInt(route.durationMin, 10) || 0);
   $id('arrival-time').textContent = now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' });
 
-  // Highlight route on Google Map if available
+  // Lock onto the single route on Google Map if available
   if (window.SathiMaps) {
-    window.SathiMaps.highlightRoute(routeIndex);
+    if (window.SathiMaps.hideAlternativeRoutes) window.SathiMaps.hideAlternativeRoutes(routeIndex);
+    if (window.SathiMaps.startLiveTracking) window.SathiMaps.startLiveTracking();
   }
 
-  startTravelBuddy();
+  if (state.travelBuddyEnabled) {
+    startTravelBuddy();
+  } else {
+    updateBuddyUI(false);
+  }
   toast(`Navigating via ${route.name || route.summary || 'selected route'}`, 'success', '🧭');
 }
 
@@ -520,6 +533,23 @@ function endNavigation() {
   state.isNavigating = false;
   stopTravelBuddy();
   flushOnNavEnd(); // submit any pending reviews immediately
+
+  if (window.SathiMaps) {
+    if (window.SathiMaps.stopLiveTracking) window.SathiMaps.stopLiveTracking();
+    if (window.SathiMaps.clearRouteRenderers) window.SathiMaps.clearRouteRenderers();
+    
+    const navMapState = window.SathiMaps.getState();
+    if (navMapState.map && navMapState.currentLocation) {
+      navMapState.map.panTo(navMapState.currentLocation);
+      navMapState.map.setZoom(15);
+    }
+  }
+
+  // Clear the inputs and UI
+  $id('dest-input').value = '';
+  if ($id('clear-dest-btn')) $id('clear-dest-btn').classList.add('hidden');
+  closeRoutesPanel();
+  if ($qs('.map-overlay-text')) $qs('.map-overlay-text').classList.remove('hidden');
 
   $id('nav-active-view').classList.add('hidden');
   $id('search-panel').classList.remove('hidden');
@@ -565,17 +595,59 @@ function openInGoogleMaps() {
 }
 
 // ─── TRAVEL BUDDY ─────────────────────────────────────────────────────
+function updateBuddyUI(isActive) {
+  const label = $id('buddy-label');
+  const status = $id('buddy-status-text');
+  const searchToggle = $id('search-buddy-toggle');
+  const navToggle = $id('nav-buddy-toggle');
+  
+  if (searchToggle) searchToggle.classList.toggle('active', state.travelBuddyEnabled);
+  if (navToggle) navToggle.classList.toggle('active', state.travelBuddyEnabled);
+  
+  if (isActive) {
+    if (label) label.textContent = 'Travel Buddy Active';
+    if (status) status.innerHTML = `Monitoring your journey · <span id="buddy-time">0:00</span>`;
+    $id('ind-location').classList.add('active');
+    $id('ind-safety').classList.add('safe');
+  } else {
+    if (label) label.textContent = 'Travel Buddy Off';
+    if (status) status.innerHTML = 'Safety tracking disabled';
+    $id('ind-location').classList.remove('active');
+    $id('ind-safety').classList.remove('safe');
+  }
+}
+
+function toggleTravelBuddyPref(enable) {
+  state.travelBuddyEnabled = enable;
+  updateBuddyUI(state.buddyActive);
+  
+  if (state.isNavigating) {
+    if (enable && !state.buddyActive) {
+      startTravelBuddy();
+      toast('Travel Buddy activated', 'success', '🧍');
+    } else if (!enable && state.buddyActive) {
+      stopTravelBuddy();
+      updateBuddyUI(false);
+      toast('Travel Buddy disabled', 'warn', '🧍');
+    }
+  } else {
+    toast(`Travel Buddy ${enable ? 'enabled' : 'disabled'} for next trip`, enable ? 'success' : 'warn', '🧍');
+  }
+}
+
 function startTravelBuddy() {
   state.buddyActive = true;
   state.buddyStartTime = Date.now();
-  $id('ind-location').classList.add('active');
+  updateBuddyUI(true);
 
   // Timer display
   state.buddyTimerInterval = setInterval(() => {
+    if (!state.buddyActive) return;
     const elapsed = Date.now() - state.buddyStartTime;
     const mins = Math.floor(elapsed / 60000);
     const secs = Math.floor((elapsed % 60000) / 1000);
-    $id('buddy-time').textContent = `${mins}:${String(secs).padStart(2, '0')}`;
+    const timeEl = $id('buddy-time');
+    if (timeEl) timeEl.textContent = `${mins}:${String(secs).padStart(2, '0')}`;
   }, 1000);
 
   // Stop detection (simulated after delay in demo)
@@ -589,27 +661,63 @@ function stopTravelBuddy() {
   clearTimeout(state.pendingOkayTimeout);
 }
 
-function scheduleStopDetection() {
-  // For demo: trigger the "Are you okay" after 30 seconds instead of 10 min
-  state.stopTimeout = setTimeout(() => {
+function scheduleStopDetection(delayMs = STOP_DETECTION_MS) {
+  state.stopTimeout = setTimeout(async () => {
     if (state.isNavigating && state.buddyActive) {
+      if (window.SathiMaps?.checkTrafficJam) {
+        const isJam = await window.SathiMaps.checkTrafficJam();
+        if (isJam) {
+          console.log('Traffic jam detected; deferring OK check.');
+          scheduleStopDetection(); // check again later
+          return;
+        }
+      }
       showOkayCheck();
     }
-  }, 30000);
+  }, delayMs);
 }
 
-function showOkayCheck() {
-  showModal('okay-modal-overlay');
-  toast('Safety check triggered — stationary for 10+ minutes', 'warn', '⚠️');
+function showOkayCheck({ reason } = {}) {
+  const isDeviation = reason === 'deviation';
+  const title = $id('okay-modal-title');
+  const desc = $id('okay-modal-desc');
+  if (title) title.textContent = isDeviation ? 'Route Deviation Detected' : 'Are you okay?';
+  if (desc) desc.textContent = isDeviation 
+    ? "You've deviated over 150m from your safe route. Are you okay?" 
+    : "You've been stationary for over 1 minute. We want to make sure you're safe.";
 
-  // Auto-SOS if no response in 2 minutes (demo: 30s)
-  state.pendingOkayTimeout = setTimeout(() => {
-    const modal = $id('okay-modal-overlay');
-    if (!modal.classList.contains('hidden')) {
+  showModal('okay-modal-overlay');
+  toast(isDeviation ? 'Route deviation warning triggered' : 'Safety check triggered — stationary for 1+ minute', 'warn', '⚠️');
+
+  let countdown = 60;
+  const display = $id('okay-countdown-display');
+  if (display) display.textContent = `Auto SOS in ${countdown}s...`;
+
+  state.pendingOkayTimeout = setInterval(() => {
+    countdown--;
+    if (display) display.textContent = `Auto SOS in ${countdown}s...`;
+    
+    if (countdown <= 0) {
+      clearInterval(state.pendingOkayTimeout);
       hideModal('okay-modal-overlay');
-      triggerSOS('stop_detection');
+      playBuzzer();
+      setTimeout(() => triggerSOS('auto_timeout'), 1000);
     }
-  }, 30000);
+  }, 1000);
+}
+
+function playBuzzer() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = ctx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(440, ctx.currentTime);
+    osc.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 3);
+  } catch (e) {
+    console.warn('Buzzer failed', e);
+  }
 }
 
 // ─── SOS SYSTEM ──────────────────────────────────────────────────────
@@ -979,6 +1087,13 @@ function initEventListeners() {
     btn.addEventListener('click', () => setMode(btn.dataset.mode));
   });
 
+  const navThemeToggle = $id('nav-theme-toggle');
+  if (navThemeToggle) {
+    navThemeToggle.addEventListener('click', () => {
+      setMode(state.mode === 'night' ? 'normal' : 'night');
+    });
+  }
+
   // Search
   $id('dest-input').addEventListener('keydown', e => {
     // Enter key: only triggers mock/fallback search (real search fires via Places autocomplete)
@@ -995,8 +1110,22 @@ function initEventListeners() {
   });
 
   $id('use-location-btn').addEventListener('click', () => {
-    $id('origin-input').value = 'Current Location 📍';
-    toast('Using your current location', 'info', '📍');
+    toast('Fetching current location...', 'info', '📍');
+    if (window.SathiMaps && window.SathiMaps.startGeolocation) {
+      window.SathiMaps.startGeolocation();
+    } else {
+      $id('origin-input').value = 'Current Location 📍';
+    }
+  });
+
+  $id('use-dest-location-btn')?.addEventListener('click', () => {
+    toast('Fetching current location...', 'info', '📍');
+    if (window.SathiMaps && window.SathiMaps.fetchDestLocation) {
+      window.SathiMaps.fetchDestLocation();
+    } else {
+      $id('dest-input').value = 'Current Location 📍';
+      $id('clear-dest-btn').classList.remove('hidden');
+    }
   });
 
   $id('clear-dest-btn').addEventListener('click', () => {
@@ -1067,24 +1196,19 @@ function initEventListeners() {
 
   // Okay check
   $id('okay-yes-btn').addEventListener('click', () => {
-    clearTimeout(state.pendingOkayTimeout);
+    clearInterval(state.pendingOkayTimeout);
     hideModal('okay-modal-overlay');
     toast('Great! Journey continues safely', 'success', '✅');
     scheduleStopDetection();
   });
 
   $id('okay-timer-btn').addEventListener('click', () => {
-    clearTimeout(state.pendingOkayTimeout);
+    clearInterval(state.pendingOkayTimeout);
     hideModal('okay-modal-overlay');
-    toast('Timer set — check-in in 5 minutes', 'info', '⏱️');
-    state.pendingOkayTimeout = setTimeout(() => {
-      if (state.isNavigating) showOkayCheck();
-    }, 5 * 60 * 1000);
-  });
-
-  $id('okay-sos-btn').addEventListener('click', () => {
-    hideModal('okay-modal-overlay');
-    triggerSOS('manual');
+    
+    const minutes = parseInt($id('custom-timer-input')?.value, 10) || 5;
+    toast(`Timer set — check-in in ${minutes} minutes`, 'info', '⏱️');
+    scheduleStopDetection(minutes * 60 * 1000);
   });
 
   // Sidebar
@@ -1141,6 +1265,14 @@ function initEventListeners() {
       simulateDownload(card, btn);
     });
   });
+
+  // Travel Buddy toggles
+  const handleBuddyToggle = function () {
+    const isActive = this.classList.contains('active');
+    toggleTravelBuddyPref(!isActive);
+  };
+  $id('search-buddy-toggle')?.addEventListener('click', handleBuddyToggle);
+  $id('nav-buddy-toggle')?.addEventListener('click', handleBuddyToggle);
 
   // Voice toggles
   $id('voice-toggle').addEventListener('click', function () {
@@ -1219,6 +1351,10 @@ window.onMapsReady = function () {
 };
 
 // ─── INIT ─────────────────────────────────────────────────────────────
+window.onRouteDeviation = () => {
+  if (state.isNavigating) showOkayCheck({ reason: 'deviation' });
+};
+
 function init() {
   // Show splash, hide after load
   setTimeout(hideSplash, 2600);

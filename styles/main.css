@@ -703,7 +703,7 @@ body.night-mode .night-overlay { opacity: 1; }
   flex-direction: column;
 }
 
-.routes-panel.open { max-height: 75vh; }
+.routes-panel.open { max-height: calc(100dvh - 330px); }
 
 .panel-handle {
   width: 40px;
@@ -740,7 +740,7 @@ body.night-mode .night-overlay { opacity: 1; }
   flex-direction: column;
   gap: 0.75rem;
   overflow-y: auto;
-  max-height: calc(75vh - 140px);
+  max-height: calc(100dvh - 410px);
   scrollbar-width: thin;
   scrollbar-color: var(--border-medium) transparent;
 }
@@ -1078,12 +1078,12 @@ body.night-mode .night-overlay { opacity: 1; }
 .buddy-label {
   font-size: 0.8rem;
   font-weight: 600;
-  color: var(--text-primary);
+  color: #F8FAFC;
 }
 
 .buddy-status {
   font-size: 0.72rem;
-  color: var(--text-secondary);
+  color: rgba(255, 255, 255, 0.7);
 }
 
 .buddy-indicators {

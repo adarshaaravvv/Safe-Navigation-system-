@@ -16,6 +16,7 @@ const mapsState = {
   userMarker:       null,
   directionsService: null,
   renderers:        [],        // one DirectionsRenderer per route
+  routeMarkers:     [],        // Start/End pins
   currentLocation:  null,      // { lat, lng }
   destLocation:     null,      // { lat, lng }
   autocomplete:     null,
@@ -173,11 +174,40 @@ function startGeolocation() {
       });
 
       document.getElementById('origin-input').value = 'Current Location 📍';
+      if (window.onOriginSelected) {
+        window.onOriginSelected('Current Location 📍', mapsState.currentLocation);
+      }
     },
     (err) => {
       console.warn('Geolocation error:', err.message);
       // Fallback to Bengaluru city center
       mapsState.currentLocation = { lat: 12.9716, lng: 77.5946 };
+    },
+    { enableHighAccuracy: true, timeout: 8000 }
+  );
+}
+
+/**
+ * Get user's GPS location and set it as destination.
+ */
+function fetchDestLocation() {
+  if (!navigator.geolocation) return;
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      mapsState.destLocation = loc;
+      
+      document.getElementById('dest-input').value = 'Current Location 📍';
+      const clearBtn = document.getElementById('clear-dest-btn');
+      if (clearBtn) clearBtn.classList.remove('hidden');
+
+      if (window.onDestinationSelected) {
+        window.onDestinationSelected('Current Location 📍', mapsState.destLocation);
+      }
+    },
+    (err) => {
+      console.warn('Geolocation error:', err.message);
     },
     { enableHighAccuracy: true, timeout: 8000 }
   );
@@ -331,18 +361,42 @@ function highlightRoute(selectedIndex) {
 }
 
 /**
+ * Hide all alternative routes leaving only the selected one.
+ */
+function hideAlternativeRoutes(selectedIndex) {
+  mapsState.renderers.forEach((renderer, i) => {
+    if (i !== selectedIndex) {
+      renderer.setMap(null);
+    } else {
+      renderer.setOptions({
+        polylineOptions: {
+          strokeWeight:  7,
+          strokeOpacity: 1.0,
+          zIndex:        20,
+        },
+      });
+    }
+  });
+}
+
+/**
  * Clear all rendered route polylines from the map.
  */
 function clearRouteRenderers() {
   mapsState.renderers.forEach(r => r.setMap(null));
   mapsState.renderers = [];
+  
+  if (mapsState.routeMarkers) {
+    mapsState.routeMarkers.forEach(m => m.setMap(null));
+    mapsState.routeMarkers = [];
+  }
 }
 
 /**
  * Add origin and destination markers with custom icons.
  */
 function addRouteMarkers(origin, dest) {
-  new google.maps.Marker({
+  const m1 = new google.maps.Marker({
     position: origin,
     map:      mapsState.map,
     icon: {
@@ -357,7 +411,7 @@ function addRouteMarkers(origin, dest) {
     zIndex: 90,
   });
 
-  new google.maps.Marker({
+  const m2 = new google.maps.Marker({
     position: dest,
     map:      mapsState.map,
     icon: {
@@ -371,6 +425,8 @@ function addRouteMarkers(origin, dest) {
     title: 'Destination',
     zIndex: 90,
   });
+
+  mapsState.routeMarkers = [m1, m2];
 }
 
 /**
@@ -381,6 +437,60 @@ function updateUserPosition(lat, lng) {
   const pos = new google.maps.LatLng(lat, lng);
   mapsState.userMarker.setPosition(pos);
   mapsState.map.panTo(pos);
+}
+
+let activeRoutePolyline = null;
+let lastDeviationWarning = 0;
+
+function startLiveTracking() {
+  if (!navigator.geolocation) return;
+  if (mapsState.geolocationWatch) return;
+
+  const idx = window._sathi_selectedIdx || 0;
+  if (mapsState.renderers && mapsState.renderers.length > idx) {
+    const route = mapsState.renderers[idx].getDirections().routes[0];
+    if (route) {
+      activeRoutePolyline = new google.maps.Polyline({ path: route.overview_path });
+    }
+  }
+
+  mapsState.geolocationWatch = navigator.geolocation.watchPosition(
+    (pos) => {
+      const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      mapsState.currentLocation = loc;
+      updateUserPosition(loc.lat, loc.lng);
+      checkDeviation(loc);
+    },
+    (err) => console.warn('Live tracking error:', err.message),
+    { enableHighAccuracy: true }
+  );
+}
+
+function stopLiveTracking() {
+  if (mapsState.geolocationWatch) {
+    navigator.geolocation.clearWatch(mapsState.geolocationWatch);
+    mapsState.geolocationWatch = null;
+  }
+}
+
+function checkDeviation(loc) {
+  if (!activeRoutePolyline) return;
+  
+  const userLatLng = new google.maps.LatLng(loc.lat, loc.lng);
+  
+  // 0.00135 degrees is roughly 150 meters
+  const isOnRoute = google.maps.geometry.poly.isLocationOnEdge(userLatLng, activeRoutePolyline, 0.00135);
+
+  if (!isOnRoute) {
+    const now = Date.now();
+    // Cooldown: warn once every 5 minutes maximum
+    if (now - lastDeviationWarning > 5 * 60 * 1000) {
+      lastDeviationWarning = now;
+      if (window.onRouteDeviation) {
+        window.onRouteDeviation();
+      }
+    }
+  }
 }
 
 /**
@@ -403,6 +513,46 @@ function setMapTheme(mode) {
   mapsState.map.setOptions({ styles: mode === 'night' ? DARK_MAP_STYLE : [] });
 }
 
+/**
+ * Check if the route has heavy traffic delays.
+ * @returns {Promise<boolean>} true if duration in traffic is > 30% longer than normal duration
+ */
+async function checkTrafficJam() {
+  if (!mapsState.directionsService || !mapsState.currentLocation || !mapsState.destLocation) {
+    return false; // Cannot check predictably, assume no jam
+  }
+  
+  return new Promise((resolve) => {
+    mapsState.directionsService.route(
+      {
+        origin: new google.maps.LatLng(mapsState.currentLocation.lat, mapsState.currentLocation.lng),
+        destination: new google.maps.LatLng(mapsState.destLocation.lat, mapsState.destLocation.lng),
+        travelMode: google.maps.TravelMode.DRIVING,
+        drivingOptions: {
+          departureTime: new Date(),  // for current traffic
+          trafficModel: 'bestguess'
+        },
+        provideRouteAlternatives: false,
+        unitSystem: google.maps.UnitSystem.METRIC,
+      },
+      (result, status) => {
+        if (status !== 'OK' || !result.routes.length) {
+          return resolve(false);
+        }
+        
+        const leg = result.routes[0].legs[0];
+        const duration = leg.duration?.value || 0;
+        const durationInTraffic = leg.duration_in_traffic?.value || 0;
+        
+        if (duration === 0 || durationInTraffic === 0) return resolve(false);
+        
+        // Traffic adds > 30% time
+        resolve((durationInTraffic / duration) > 1.3);
+      }
+    );
+  });
+}
+
 // ─── Global callback for Google Maps async loader ─────────────────────
 window.onGoogleMapsReady = initGoogleMap;
 
@@ -410,8 +560,14 @@ window.onGoogleMapsReady = initGoogleMap;
 window.SathiMaps = {
   fetchRealRoutes,
   highlightRoute,
+  hideAlternativeRoutes,
   clearRouteRenderers,
   updateUserPosition,
   setMapTheme,
+  checkTrafficJam,
+  startLiveTracking,
+  stopLiveTracking,
+  startGeolocation,
+  fetchDestLocation,
   getState: () => mapsState,
 };

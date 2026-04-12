@@ -12,6 +12,8 @@
 
   <link rel="stylesheet" href="styles/main.css" />
   <link rel="stylesheet" href="styles/auth.css" />
+  
+  <script src="js/api.js"></script>
 
   <!-- Init Theme before rendering to avoid flash -->
   <script>
@@ -157,17 +159,40 @@
     btnNight.addEventListener('click', () => setMode('night'));
 
     // Handle Login
-    document.getElementById('loginForm').addEventListener('submit', (e) => {
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      // Mock successful login
       const email = document.getElementById('email').value;
+      const pwd = document.getElementById('password').value;
       
-      // Store simple auth token
-      localStorage.setItem('sathiAuthToken', 'mock-token-12345');
-      localStorage.setItem('sathiUserEmail', email);
+      const submitBtn = e.target.querySelector('button[type="submit"]');
+      submitBtn.textContent = 'Authenticating...';
+      submitBtn.disabled = true;
 
-      // Redirect to main app
-      window.location.href = 'index.html';
+      try {
+        // We use email as the mock uid for lookups
+        const response = await window.SathiAPI.loginUser(email);
+        
+        // If we get an error or user not found, catch it
+        if (!response.user) throw new Error("User not found in system.");
+
+        // MOCK: Verify password (since real backend relies on Firebase for passwords)
+        const savedMockPwd = localStorage.getItem(`mockPwd_${email}`);
+        if (!savedMockPwd || savedMockPwd !== pwd) {
+          throw new Error("Invalid password.");
+        }
+
+        // Store tokens
+        localStorage.setItem('sathiAuthToken', response.user.id);
+        localStorage.setItem('sathiUserEmail', response.user.email);
+        localStorage.setItem('sathiUserName', response.user.name);
+
+        // Redirect to main app
+        window.location.href = 'index.html';
+      } catch (err) {
+        alert("Login failed: User not found or invalid credentials.");
+        submitBtn.textContent = 'Log In';
+        submitBtn.disabled = false;
+      }
     });
 
     function socialLogin(provider) {

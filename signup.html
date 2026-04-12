@@ -190,14 +190,16 @@
         const response = await window.SathiAPI.registerUser({
           firebaseUid: email,
           name: name,
-          email: email,
-          phone: null
+          email: email
         });
 
         // Store auth tokens & user data
         localStorage.setItem('sathiAuthToken', response.user.id || 'mock-id');
         localStorage.setItem('sathiUserEmail', response.user.email);
         localStorage.setItem('sathiUserName', response.user.name);
+        
+        // MOCK: Store password locally to simulate frontend authentication blocks
+        localStorage.setItem(`mockPwd_${email}`, pwd);
 
         // Redirect to main app
         window.location.href = 'index.html';

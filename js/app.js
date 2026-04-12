@@ -17,6 +17,7 @@ const REVIEW_BATCH_INTERVAL_MS = 60 * 1000;
 // ─── STATE ──────────────────────────────────────────────────────────
 const state = {
   mode: 'normal', // 'normal' | 'night'
+  travelMode: 'DRIVING', // 'DRIVING' | 'WALKING' | 'BICYCLING' | 'TRANSIT'
   routes: [],
   selectedRouteIndex: 0,
   isNavigating: false,
@@ -33,6 +34,8 @@ const state = {
   voiceSosEnabled: false,
   sidebarOpen: false,
   activeFilter: 'all',
+  // Per-mode best scores cache: { DRIVING: 8.4, WALKING: 7.1, ... }
+  transportScoreCache: {},
 };
 
 // ─── MOCK DATA ───────────────────────────────────────────────────────
@@ -279,6 +282,10 @@ function renderRouteCards(routes) {
     const nightSafeTag = state.mode === 'night' && route.scores.isNightSafe
       ? `<span class="night-safe-tag">🌙 Night Safe</span>` : '';
 
+    // Transport mode tag shown on each card
+    const tmMeta = TRANSPORT_MODE_META[state.travelMode] || TRANSPORT_MODE_META.DRIVING;
+    const tmTag = `<span class="route-mode-tag">${tmMeta.icon} ${tmMeta.label}</span>`;
+
     const card = document.createElement('div');
     card.className = `route-card ${typeClass}${i === state.selectedRouteIndex ? ' selected' : ''}`;
     card.style.animationDelay = `${delay}ms`;
@@ -289,6 +296,7 @@ function renderRouteCards(routes) {
         <span class="route-badge ${badgeClass}">${badgeLabel}</span>
         <div class="route-meta" style="display:flex;align-items:center;gap:0.5rem">
           ${nightSafeTag}
+          ${tmTag}
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${route.durationMin} min
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l18-6-6 18-3-9-9-3z"/></svg>${route.distanceKm} km
         </div>
@@ -399,12 +407,71 @@ function animateRoutePaths(routes) {
   $qs('.map-overlay-text')?.classList.add('hidden');
 }
 
+// ─── TRANSPORT MODE ───────────────────────────────────────────────────
+const TRANSPORT_MODE_META = {
+  DRIVING:   { icon: '🚗', label: 'Drive' },
+  WALKING:   { icon: '🚶', label: 'Walk' },
+  BICYCLING: { icon: '🚲', label: 'Bike' },
+  TRANSIT:   { icon: '🚌', label: 'Transit' },
+};
+
+function setTravelMode(mode) {
+  if (state.travelMode === mode) return; // no-op
+  state.travelMode = mode;
+
+  // Update active button styling
+  $qsa('.transport-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.mode === mode);
+  });
+
+  // Re-fetch routes if a destination is already set
+  const destInput = $id('dest-input');
+  const mapsState = window.SathiMaps?.getState();
+  if (mapsState?.destLocation && destInput?.value) {
+    triggerRouteSearch(destInput.value, mapsState.destLocation);
+  }
+}
+
+/**
+ * After routes load, find the best safety score and show it
+ * as a badge on the currently-active transport button.
+ * Also pre-populates cached scores from already-fetched modes.
+ */
+function updateTransportScoreBadge(routes, travelMode) {
+  if (!routes || routes.length === 0) return;
+
+  // Best score = highest finalScore among returned routes
+  const best = routes.reduce((max, r) => {
+    const s = r.scores?.finalScore ?? 0;
+    return s > max ? s : max;
+  }, 0);
+
+  state.transportScoreCache[travelMode] = best;
+
+  // Update ALL score badges from cache
+  Object.entries(state.transportScoreCache).forEach(([tm, score]) => {
+    const scoreEl = $id(`tm-score-${tm.toLowerCase()}`);
+    if (!scoreEl) return;
+    scoreEl.textContent = score.toFixed(1);
+    scoreEl.classList.remove('hidden', 'score-warn', 'score-danger');
+    if (score >= 7.5)      scoreEl.classList.add('fill-safe');
+    else if (score >= 5.0) scoreEl.classList.add('score-warn');
+    else                   scoreEl.classList.add('score-danger');
+  });
+}
+
 // ─── ROUTE SEARCH ────────────────────────────────────────────────────
 async function triggerRouteSearch(destName, destLocation) {
   const dest = destName || $id('dest-input').value.trim();
   if (!dest) return;
 
-  toast('Finding safest routes…', 'info', '🔍');
+  const meta = TRANSPORT_MODE_META[state.travelMode] || TRANSPORT_MODE_META.DRIVING;
+  toast(`Finding ${meta.label.toLowerCase()} routes…`, 'info', meta.icon);
+
+  // Set the active transport btn to loading state
+  $qsa('.transport-btn').forEach(btn => btn.classList.remove('loading'));
+  const activeBtn = $qs(`.transport-btn[data-mode="${state.travelMode}"]`);
+  if (activeBtn) activeBtn.classList.add('loading');
 
   // Try real Google Maps routes first
   if (window.SathiMaps && destLocation) {
@@ -412,28 +479,37 @@ async function triggerRouteSearch(destName, destLocation) {
       const origin = window.SathiMaps.getState().currentLocation
         || { lat: 12.9716, lng: 77.5946 }; // Bengaluru fallback
 
-      const routes = await window.SathiMaps.fetchRealRoutes(origin, destLocation, state.mode);
+      const routes = await window.SathiMaps.fetchRealRoutes(
+        origin, destLocation, state.mode, state.travelMode
+      );
+
+      if (activeBtn) activeBtn.classList.remove('loading');
 
       state.routes = routes;
       renderRouteCards(routes);
       openRoutesPanel();
+      updateTransportScoreBadge(routes, state.travelMode);
 
       const count = routes.length;
       const modeLabel = state.mode === 'night' ? ' (Night Mode filtered)' : '';
-      toast(`${count} safe route${count !== 1 ? 's' : ''} found${modeLabel}`, 'success', '✅');
+      toast(`${count} ${meta.label} route${count !== 1 ? 's' : ''} found${modeLabel}`, 'success', '✅');
       $id('clear-dest-btn').classList.remove('hidden');
       return;
     } catch (err) {
+      if (activeBtn) activeBtn.classList.remove('loading');
       console.warn('Google Maps routes failed, falling back to demo:', err.message);
       toast('Using demo routes — Maps API loading', 'warn', '📡');
     }
   }
+
+  if (activeBtn) activeBtn.classList.remove('loading');
 
   // Fallback: mock routes (when Maps not loaded or no location selected)
   setTimeout(() => {
     state.routes = computeAllRoutes(state.mode);
     renderRouteCards(state.routes);
     openRoutesPanel();
+    updateTransportScoreBadge(state.routes, state.travelMode);
 
     const count = state.routes.length;
     const modeLabel = state.mode === 'night' ? ' (Night Mode filtered)' : '';
@@ -598,7 +674,15 @@ function openInGoogleMaps() {
     destStr = encodeURIComponent($id('dest-input').value.trim() || 'Bengaluru');
   }
 
-  let mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destStr}&travelmode=driving`;
+  // Map Sathi travel mode to Google Maps travelmode param
+  const gmapsModeMap = {
+    DRIVING:   'driving',
+    WALKING:   'walking',
+    BICYCLING: 'bicycling',
+    TRANSIT:   'transit',
+  };
+  const gmapsMode = gmapsModeMap[state.travelMode] || 'driving';
+  let mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destStr}&travelmode=${gmapsMode}`;
   
   if (originStr) {
     mapsUrl += `&origin=${originStr}`;
@@ -1253,6 +1337,11 @@ function initEventListeners() {
   // Filter chips
   $qsa('.chip').forEach(chip => {
     chip.addEventListener('click', () => applyFilter(chip.dataset.filter));
+  });
+
+  // Transport mode buttons
+  $qsa('.transport-btn').forEach(btn => {
+    btn.addEventListener('click', () => setTravelMode(btn.dataset.mode));
   });
 
   // Route card clicks (delegated)

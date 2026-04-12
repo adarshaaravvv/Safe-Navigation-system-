@@ -219,12 +219,13 @@ function fetchDestLocation() {
 /**
  * Fetch up to 3 real route alternatives using Google Directions API.
  * Colors them by safety rank: green (safest), amber (balanced), blue (fastest).
- * @param {object} origin  { lat, lng }
- * @param {object} dest    { lat, lng }
- * @param {string} mode    'normal' | 'night'
+ * @param {object} origin      { lat, lng }
+ * @param {object} dest        { lat, lng }
+ * @param {string} mode        'normal' | 'night'
+ * @param {string} travelMode  'DRIVING' | 'WALKING' | 'BICYCLING' | 'TRANSIT'
  * @returns {Promise<Array>} Array of route objects with scores
  */
-async function fetchRealRoutes(origin, dest, mode = 'normal') {
+async function fetchRealRoutes(origin, dest, mode = 'normal', travelMode = 'DRIVING') {
   if (!mapsState.directionsService) throw new Error('Maps not initialized');
 
   // Ensure we always have an origin — use passed-in, then GPS, then Bengaluru fallback
@@ -234,18 +235,39 @@ async function fetchRealRoutes(origin, dest, mode = 'normal') {
 
   // Store dest for later scoring
   mapsState.destLocation = dest;
+  mapsState.currentTravelMode = travelMode; // store for traffic check
 
   clearRouteRenderers();
 
+  // Map string to Google TravelMode enum
+  const modeMap = {
+    DRIVING:   google.maps.TravelMode.DRIVING,
+    WALKING:   google.maps.TravelMode.WALKING,
+    BICYCLING: google.maps.TravelMode.BICYCLING,
+    TRANSIT:   google.maps.TravelMode.TRANSIT,
+  };
+  const googleMode = modeMap[travelMode] || google.maps.TravelMode.DRIVING;
+
   return new Promise((resolve, reject) => {
+    const request = {
+      origin:      new google.maps.LatLng(effectiveOrigin.lat, effectiveOrigin.lng),
+      destination: new google.maps.LatLng(dest.lat, dest.lng),
+      travelMode:  googleMode,
+      unitSystem:  google.maps.UnitSystem.METRIC,
+    };
+
+    // Only driving supports route alternatives
+    if (travelMode === 'DRIVING') {
+      request.provideRouteAlternatives = true;
+    }
+
+    // Transit needs a departure time
+    if (travelMode === 'TRANSIT') {
+      request.transitOptions = { departureTime: new Date() };
+    }
+
     mapsState.directionsService.route(
-      {
-        origin:      new google.maps.LatLng(effectiveOrigin.lat, effectiveOrigin.lng),
-        destination: new google.maps.LatLng(dest.lat, dest.lng),
-        travelMode:  google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: true,
-        unitSystem: google.maps.UnitSystem.METRIC,
-      },
+      request,
       async (result, status) => {
         if (status !== 'OK') {
           return reject(new Error(`Directions API: ${status}`));
@@ -266,6 +288,7 @@ async function fetchRealRoutes(origin, dest, mode = 'normal') {
             distanceKm:  (leg.distance.value / 1000).toFixed(1),
             durationMin: Math.round(leg.duration.value / 60),
             summary:     r.summary,
+            travelMode,
             // Segments from steps (used for scoring)
             steps:       leg.steps,
             gmapsRoute:  r,         // raw Google route

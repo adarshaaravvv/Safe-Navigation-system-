@@ -161,6 +161,40 @@
           </button>
         </div>
       </div>
+      <!-- ── TRANSPORT MODE SELECTOR ── -->
+      <div class="transport-mode-bar" id="transport-mode-bar">
+        <div class="transport-mode-scroll">
+          <button class="transport-btn active" id="tm-driving" data-mode="DRIVING" aria-label="Drive" title="Driving">
+            <span class="tm-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="9" width="22" height="11" rx="2"/><path d="M1 9l3-6h16l3 6"/><circle cx="7" cy="20" r="1.5" fill="currentColor" stroke="none"/><circle cx="17" cy="20" r="1.5" fill="currentColor" stroke="none"/></svg>
+            </span>
+            <span class="tm-label">Drive</span>
+            <span class="tm-score hidden" id="tm-score-driving"></span>
+          </button>
+          <button class="transport-btn" id="tm-walking" data-mode="WALKING" aria-label="Walk" title="Walking">
+            <span class="tm-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 4a1 1 0 1 0 2 0 1 1 0 0 0-2 0"/><path d="M7 20l3-8 2 3 3-5 2 10"/><path d="M10 13l-3 7"/></svg>
+            </span>
+            <span class="tm-label">Walk</span>
+            <span class="tm-score hidden" id="tm-score-walking"></span>
+          </button>
+          <button class="transport-btn" id="tm-bicycling" data-mode="BICYCLING" aria-label="Bike" title="Cycling">
+            <span class="tm-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5.5" cy="17.5" r="3.5"/><circle cx="18.5" cy="17.5" r="3.5"/><path d="M15 6h2l2 5"/><path d="M5.5 17.5L15 6l-3 6-6 5.5"/><circle cx="15" cy="6" r="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+            <span class="tm-label">Bike</span>
+            <span class="tm-score hidden" id="tm-score-bicycling"></span>
+          </button>
+          <button class="transport-btn" id="tm-transit" data-mode="TRANSIT" aria-label="Transit" title="Public Transit">
+            <span class="tm-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="2" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M8 19l-2 3"/><path d="M16 19l2 3"/><circle cx="8.5" cy="15" r="1" fill="currentColor" stroke="none"/><circle cx="15.5" cy="15" r="1" fill="currentColor" stroke="none"/></svg>
+            </span>
+            <span class="tm-label">Transit</span>
+            <span class="tm-score hidden" id="tm-score-transit"></span>
+          </button>
+        </div>
+      </div>
+
       <div class="filter-chips" id="filter-chips">
         <button class="chip active" data-filter="all">All Routes</button>
         <button class="chip" data-filter="safest">Safest</button>

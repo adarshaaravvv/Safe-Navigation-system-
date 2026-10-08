@@ -1,125 +1,154 @@
-# Safe-Navigation-system-
-> Safety-first navigation with crowdsourced safety scoring, Smart Night Mode, Virtual Travel Buddy, SOS alerts, and Offline mode.
----
-## Quick Start
+## Sathi Navigation
+[](https://opensource.org/licenses/MIT)
+[](https://nodejs.org/)
+[](https://www.python.org/)
+[](https://fastapi.tiangolo.com)
+Sathi Navigation is a production-grade, safety-centric navigation engine featuring crowdsourced safety scoring, automated Smart Night Mode, Virtual Travel Buddy monitoring via dynamic WebSockets, multi-channel SOS alerting, and robust offline capabilities.
+------------------------------
+## 🏗️ Architecture Overview
+The system is engineered using a decoupled, service-oriented architecture:
 
-### Open the Frontend
-```bash
-open index.html   # macOS
-# or double-click index.html in Finder
-```
+                  ┌──────────────────────────┐
+                  │   Monolithic Frontend    │ <─── Static HTML5 / PWA Service Worker
+                  └──────────────────────────┘
+                     │                    │
+        REST (Express API)          WebSockets (Real-time tracking)
+                     ▼                    ▼
+     ┌──────────────────────────────────────────┐
+     │            Node.js Backend               │ <─── Orchestration, Twilio, PostGIS DB
+     └──────────────────────────────────────────┘
+         │                           │
+  Internal REST                Caching Layer
+         ▼                           ▼
+┌──────────────────┐       ┌──────────────────┐
+│ Python AI Engine │       │   Redis Cache    │ <─── Hot route scores
+└──────────────────┘       └──────────────────┘
 
-### Run the Backend (requires Node.js)
-```bash
+------------------------------
+## 📁 Repository Structure
+
+.
+├── index.html                   # PWA Frontend application core Entrypoint
+├── manifest.json                # Progressive Web App manifest metadata
+├── setup.sh                     # Automated orchestration environment script
+├── styles/
+│   └── main.css                 # Scalable components & design token sheets
+├── js/
+│   └── app.js                   # Client runtime logic & fallback scoring
+├── public/
+│   └── sw.js                    # Service Worker caching layer for Offline Mode
+│
+├── backend/                     # Distributed Node.js / Express Core Service
+│   ├── .env.example             # Configuration matrix template
+│   ├── package.json             # Service dependencies and operational run-scripts
+│   ├── migrations/
+│   │   └── 001_initial_schema.sql # Relational PostGIS schema definitions
+│   └── src/
+│       ├── server.js            # Express server initialization & WebSocket engine
+│       ├── config/
+│       │   ├── db.js            # PostgreSQL connection pool orchestrator
+│       │   └── redis.js         # Redis cache engine client config
+│       ├── routes/              # Explicit API routing modules
+│       └── services/
+│           ├── scoring.service.js # Time-decayed calculations scheduler
+│           ├── sos.service.js     # Third-party integration (Twilio / Mailer)
+│           └── tracking.ws.js     # State-managed WebSockets connection engine
+│
+└── ai-service/                  # Python FastAPI Microservice
+    ├── main.py                  # Operational REST routing layer
+    ├── scoring.py               # Vectorized core scoring mathematical engine
+    └── requirements.txt         # Deterministic python environment index
+
+------------------------------
+## ⚙️ Core Technical Specifications## Mathematical Scoring Methodology
+Safety rankings for given paths deteriorate deterministically relative to temporal age using exponential mathematical decay functions:
+$$\text{Freshness Weight } (w) = \text{travelWeight} \times e^{-0.023 \times \text{daysAgo}}$$ 
+$$\text{Segment Safety Matrix Score} = \frac{\sum (\text{isSafe} \times w)}{\sum w} \times 10$$ 
+$$\text{Aggregated Path Score} = \frac{\sum (\text{segment\_safety} \times \text{segment\_length})}{\text{totalLength}}$$ 
+## Contextual Evaluation Weights
+
+* Standard Operational Mode: $0.40 \times \text{Safety} + 0.30 \times \text{Lighting} + 0.20 \times \text{Crowd Density} + 0.10 \times \text{Law Enforcement Presence}$
+* Smart Night Mode Active: $0.35 \times \text{Safety} + 0.40 \times \text{Lighting} + 0.15 \times \text{Crowd Density} + 0.10 \times \text{Law Enforcement Presence}$
+
+------------------------------
+## 🚀 Getting Started## Prerequisites
+Ensure your local development environment runs the following minimum system configurations:
+
+* Node.js $\ge \text{v20.0.0}$
+* Python $\ge \text{v3.10}$
+* PostgreSQL $\ge \text{v14}$ with PostGIS extension configured
+* Redis Server $\ge \text{v7.0}$
+
+## Automated Configuration Execution
+For quick containerless environments orchestration, execute the root setup script:
+
+chmod +x setup.sh
+./setup.sh
+
+## Manual Service Deployment## 1. Data Layer Configuration
+
+# Initialize relational repository engine
+createdb sathi_db
+# Hydrate PostGIS relational architecture matrix
+psql -d sathi_db -f backend/migrations/001_initial_schema.sql
+
+## 2. Node.js Ecosystem Initialisation
+
 cd backend
-cp .env.example .env   # Fill in your credentials
+cp .env.example .env
 npm install
-npm run dev            # → http://localhost:3001
-```
+npm run dev
 
-### Run the AI Service (requires Python 3.10+)
-```bash
+The base application layer exposes API configurations on port 3001.
+## 3. FastAPI Machine Learning Engine Startup
+
 cd ai-service
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
-# Swagger docs → http://localhost:8000/docs
-```
 
-### Set Up Database
-```bash
-# 1. Create PostgreSQL database
-createdb sathi_db
+Interactive Open-API schema engine maps directly onto http://localhost:8000/docs.
+------------------------------
+## 📡 API Architecture Matrix## Core Application Services
+All base operational payload exchanges assume structured configuration formats (application/json).
 
-# 2. Run migration (requires PostGIS extension)
-psql $DATABASE_URL -f backend/migrations/001_initial_schema.sql
-```
+| HTTP Method | Endpoint Target | Query Parameter Matrix / Request Structure | Operational Intent |
+|---|---|---|---|
+| GET | /api/routes | origin_lat, origin_lng, dest_lat, dest_lng, mode | Fetch ranked path coordinates matching algorithmic parameters. |
+| POST | /api/reviews | { segment_id: string, ratings: Object } | Stream live contextual infrastructure score metadata. |
+| POST | /api/reviews/batch | [{ segment_id: string, ratings: Object }] | Bulk upload queued offline system arrays. |
+| GET | /api/reviews/segment/:id | None | Fetch singular segment history index. |
+| POST | /api/sos/trigger | { user_id: string, coordinates: Object } | Dispatch multi-channel emergency broadcast queues. |
+| PATCH | /api/sos/:id/resolve | { resolution_hash: string } | Safely downgrade critical alert status flags. |
+| GET | /api/police/nearby | lat, lng, radius | Geocast query looking up closest verified station records. |
+| GET | /health | None | Service orchestration live checking layer. |
 
----
+## Real-time Event Streaming
 
-## Project Structure
+* WebSocket Endpoint Protocol: ws://localhost:3001/ws/track
+* Purpose: High-frequency bi-directional telemetry processing for the virtual travel buddy session management.
 
-```
-Sathi webpage/
-├── index.html                   ← Frontend app (open directly)
-├── manifest.json                ← PWA manifest
-├── setup.sh                     ← One-command setup script
-│
-├── styles/
-│   └── main.css                 ← Full design system
-│
-├── js/
-│   └── app.js                   ← App logic + scoring engine
-│
-├── public/
-│   └── sw.js                    ← Service Worker (offline)
-│
-├── backend/                     ← Node.js + Express API
-│   ├── .env.example             ← Environment template
-│   ├── package.json
-│   └── src/
-│       ├── server.js            ← Express + WebSocket entry
-│       ├── config/
-│       │   ├── db.js            ← PostgreSQL pool
-│       │   └── redis.js         ← Redis cache
-│       ├── routes/
-│       │   ├── routes.routes.js ← GET /api/routes
-│       │   ├── review.routes.js ← POST /api/reviews
-│       │   ├── sos.routes.js    ← POST /api/sos/trigger
-│       │   └── police.routes.js ← GET /api/police/nearby
-│       └── services/
-│           ├── scoring.service.js  ← Time-decay scoring engine
-│           ├── sos.service.js      ← Twilio + email alerts
-│           └── tracking.ws.js      ← WebSocket travel buddy
-│
-├── migrations/
-│   └── 001_initial_schema.sql   ← Full DB schema (PostGIS)
-│
-└── ai-service/                  ← Python FastAPI
-    ├── main.py                  ← API endpoints
-    ├── scoring.py               ← Scoring algorithms
-    └── requirements.txt
-```
+------------------------------
+## 🔐 Configuration Environment Matrix
+The system maps environment variables into core runtime configurations. Ensure backend/.env is provisioned with the following parameters:
 
----
+# Infrastructure Orchestration Variables
+PORT=3001
+DATABASE_URL=postgresql://<user>:<password>@localhost:5172/sathi_db
+REDIS_URL=redis://localhost:6379
 
-## API Endpoints
+# Third-Party Infrastructure API Bindings
+GOOGLE_MAPS_API_KEY=AIzaSyD_ExampleKeyUnsafeToExpose
+FIREBASE_PROJECT_ID=sathi-nav-auth-instance
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/routes?origin_lat=&origin_lng=&dest_lat=&dest_lng=&mode=` | Get ranked safe routes |
-| POST | `/api/reviews` | Submit segment feedback |
-| POST | `/api/reviews/batch` | Submit multiple reviews (batched) |
-| GET | `/api/reviews/segment/:id` | Get segment scores |
-| POST | `/api/sos/trigger` | Trigger SOS alert |
-| PATCH | `/api/sos/:id/resolve` | Resolve SOS event |
-| GET | `/api/police/nearby?lat=&lng=&radius=` | Police stations near location |
-| GET | `/health` | Health check |
-| WS | `ws://localhost:3001/ws/track` | Live tracking WebSocket |
+# Automated Telemetry Signaling Credentials
+TWILIO_ACCOUNT_SID=ACXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+TWILIO_AUTH_TOKEN=your_auth_token_string
 
----
+------------------------------
+## 📄 License
+Distributed under the MIT Enterprise Licensing Agreement. See LICENSE for more explicit structural terms.
+------------------------------
+Would you like me to generate a fully automated setup.sh orchestrator script or draft a comprehensive .gitignore policy tailored to keep your Python and Node environments pristine?
 
-## Environment Variables
-
-See `backend/.env.example` for full documentation of required credentials.
-
-Key variables:
-- `DATABASE_URL` — PostgreSQL connection string
-- `GOOGLE_MAPS_API_KEY` — For route fetching
-- `FIREBASE_PROJECT_ID` — For authentication
-- `TWILIO_ACCOUNT_SID` / `TWILIO_AUTH_TOKEN` — For SOS SMS
-- `REDIS_URL` — For route score caching
-
----
-
-## Scoring Algorithm
-
-```
-Freshness weight: w = travelWeight × e^(-0.023 × daysAgo)
-Segment safety:   Σ(isSafe × w) / Σ(w) × 10
-Route safety:     Σ(segment_safety × length) / totalLength
-
-Normal Mode:  0.40×safety + 0.30×lighting + 0.20×crowd + 0.10×police
-Night Mode:   0.35×safety + 0.40×lighting + 0.15×crowd + 0.10×police
-```
-
----

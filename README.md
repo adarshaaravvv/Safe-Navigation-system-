@@ -7,7 +7,6 @@ Sathi Navigation is a production-grade, safety-centric navigation engine featuri
 ------------------------------
 ## 🏗️ Architecture Overview
 The system is engineered using a decoupled, service-oriented architecture:
-
                   ┌──────────────────────────┐
                   │   Monolithic Frontend    │ <─── Static HTML5 / PWA Service Worker
                   └──────────────────────────┘

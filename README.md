@@ -1,11 +1,6 @@
 # Safe-Navigation-system-
-=======
-# Sathi Navigation
-
 > Safety-first navigation with crowdsourced safety scoring, Smart Night Mode, Virtual Travel Buddy, SOS alerts, and Offline mode.
-
 ---
-
 ## Quick Start
 
 ### Open the Frontend

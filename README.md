@@ -26,41 +26,44 @@ The system is engineered using a decoupled, service-oriented architecture:
         └──────────────────┘       └──────────────────┘
 
 
-
-------------------------------
 ## 📁 Repository Structure
 
+```hl
 .
-├── index.html                   # PWA Frontend application core Entrypoint
-├── manifest.json                # Progressive Web App manifest metadata
-├── setup.sh                     # Automated orchestration environment script
+├── index.html                     # PWA Frontend application core entry point
+├── manifest.json                  # Progressive Web App manifest metadata
+├── setup.sh                       # Automated environment orchestration script
+│
 ├── styles/
-│   └── main.css                 # Scalable components & design token sheets
+│   └── main.css                   # Design tokens and scalable component stylesheets
+│
 ├── js/
-│   └── app.js                   # Client runtime logic & fallback scoring
+│   └── app.js                     # Client runtime logic & fallback offline scoring
+│
 ├── public/
-│   └── sw.js                    # Service Worker caching layer for Offline Mode
+│   └── sw.js                      # Service Worker caching engine for Offline Mode
 │
-├── backend/                     # Distributed Node.js / Express Core Service
-│   ├── .env.example             # Configuration matrix template
-│   ├── package.json             # Service dependencies and operational run-scripts
+├── backend/                       # Core Node.js / Express Distribution Service
+│   ├── .env.example               # Configuration matrix environment template
+│   ├── package.json               # System dependencies and npm run-scripts
 │   ├── migrations/
-│   │   └── 001_initial_schema.sql # Relational PostGIS schema definitions
+│   │   └── 001_initial_schema.sql # Relational PostGIS spatial schema definitions
 │   └── src/
-│       ├── server.js            # Express server initialization & WebSocket engine
+│       ├── server.js              # Express API listener & WebSocket engine init
 │       ├── config/
-│       │   ├── db.js            # PostgreSQL connection pool orchestrator
-│       │   └── redis.js         # Redis cache engine client config
-│       ├── routes/              # Explicit API routing modules
+│       │   ├── db.js              # PostgreSQL connection pool orchestrator
+│       │   └── redis.js           # Redis cache client cluster configurations
+│       ├── routes/                # Explicit system REST API endpoints
 │       └── services/
-│           ├── scoring.service.js # Time-decayed calculations scheduler
-│           ├── sos.service.js     # Third-party integration (Twilio / Mailer)
-│           └── tracking.ws.js     # State-managed WebSockets connection engine
+│           ├── scoring.service.js # Time-decayed safety calculations scheduler
+│           ├── sos.service.js     # Third-party crisis integrations (Twilio / Mailer)
+│           └── tracking.ws.js     # Active state-managed WebSockets engine
 │
-└── ai-service/                  # Python FastAPI Microservice
-    ├── main.py                  # Operational REST routing layer
-    ├── scoring.py               # Vectorized core scoring mathematical engine
-    └── requirements.txt         # Deterministic python environment index
+└── ai-service/                    # Deep-Learning Python FastAPI Microservice
+    ├── main.py                    # High-throughput operational REST routing layer
+    ├── scoring.py                 # Vectorized core safety math engine (NumPy/Pandas)
+    └── requirements.txt           # Deterministic Python environment dependency index
+```
 
 ------------------------------
 ## ⚙️ Core Technical Specifications## Mathematical Scoring Methodology

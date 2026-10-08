@@ -1,8 +1,5 @@
 ## Sathi Navigation
-[](https://opensource.org/licenses/MIT)
-[](https://nodejs.org/)
-[](https://www.python.org/)
-[](https://fastapi.tiangolo.com)
+
 Sathi Navigation is a production-grade, safety-centric navigation engine featuring crowdsourced safety scoring, automated Smart Night Mode, Virtual Travel Buddy monitoring via dynamic WebSockets, multi-channel SOS alerting, and robust offline capabilities.
 ------------------------------
 🏗️ Architecture Overview
@@ -154,7 +151,10 @@ TWILIO_AUTH_TOKEN=your_auth_token_string
 
 ------------------------------
 ## 📄 License
+[](https://opensource.org/licenses/MIT)
+[](https://nodejs.org/)
+[](https://www.python.org/)
+[](https://fastapi.tiangolo.com)
 Distributed under the MIT Enterprise Licensing Agreement. See LICENSE for more explicit structural terms.
 ------------------------------
-Would you like me to generate a fully automated setup.sh orchestrator script or draft a comprehensive .gitignore policy tailored to keep your Python and Node environments pristine?
 

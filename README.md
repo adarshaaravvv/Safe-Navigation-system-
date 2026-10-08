@@ -129,8 +129,3 @@ Night Mode:   0.35×safety + 0.40×lighting + 0.15×crowd + 0.10×police
 ```
 
 ---
-
-## License
-
-MIT © Sathi Navigation 2025
->>>>>>> ecc56c5 (committed)

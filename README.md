@@ -5,23 +5,27 @@
 [](https://fastapi.tiangolo.com)
 Sathi Navigation is a production-grade, safety-centric navigation engine featuring crowdsourced safety scoring, automated Smart Night Mode, Virtual Travel Buddy monitoring via dynamic WebSockets, multi-channel SOS alerting, and robust offline capabilities.
 ------------------------------
-## 🏗️ Architecture Overview
+🏗️ Architecture Overview
+
 The system is engineered using a decoupled, service-oriented architecture:
+
                   ┌──────────────────────────┐
                   │   Monolithic Frontend    │ <─── Static HTML5 / PWA Service Worker
                   └──────────────────────────┘
                      │                    │
-        REST (Express API)          WebSockets (Real-time tracking)
+            REST (Express API)          WebSockets (Real-time tracking)
                      ▼                    ▼
-     ┌──────────────────────────────────────────┐
-     │            Node.js Backend               │ <─── Orchestration, Twilio, PostGIS DB
-     └──────────────────────────────────────────┘
-         │                           │
-  Internal REST                Caching Layer
-         ▼                           ▼
-┌──────────────────┐       ┌──────────────────┐
-│ Python AI Engine │       │   Redis Cache    │ <─── Hot route scores
-└──────────────────┘       └──────────────────┘
+         ┌──────────────────────────────────────────┐
+         │            Node.js Backend               │ <─── Orchestration, Twilio, PostGIS DB
+         └──────────────────────────────────────────┘
+             │                           │
+        Internal REST                Caching Layer
+             ▼                           ▼
+        ┌──────────────────┐       ┌──────────────────┐
+        │ Python AI Engine │       │   Redis Cache    │ <─── Hot route scores
+        └──────────────────┘       └──────────────────┘
+
+
 
 ------------------------------
 ## 📁 Repository Structure

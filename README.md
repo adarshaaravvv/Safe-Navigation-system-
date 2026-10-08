@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Safe-Navigation-system-
 =======
 # Sathi Navigation
